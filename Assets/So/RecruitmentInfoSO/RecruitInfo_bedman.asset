@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aedc432ef3d5ef4982844f936d88461, type: 3}
+  m_Name: RecruitInfo_bedman
+  m_EditorClassIdentifier: 
+  unit: {fileID: 11400000, guid: 04834f1cd3e005b46b717f87f41423db, type: 2}
+  story: "\uC2DC\uACE8 \uB9C8\uC744 \uCD08\uC785, \uD759\uC9D1 \uC18D\uC5D0\uC11C
+    \uBCD1\uB4E0 \uC544\uC774\uC640 \uB178\uBAA8\uB97C \uC9C0\uD0A4\uACE0 \uC788\uB294
+    \uCCAD\uB144\uC774 \uC788\uC5C8\uB2E4. \uAD70\uC5D0 \uB04C\uB824\uAC00\uC9C0
+    \uC54A\uC740 \uB355\uC5D0 \uC0B4\uC544\uB0A8\uC558\uC9C0\uB9CC, \uB9C8\uC744\uC5D0\uB294
+    \uC624\uC9C1 \uC7AC\uC640 \uACE0\uC544\uB4E4\uBFD0\uC774\uC5C8\uB2E4. \uADF8\uB294
+    \uB0A1\uC740 \uCC3D\uC744 \uBCBD\uC5D0 \uAE30\uB300\uC5B4 \uB193\uACE0 \uC528\uC557\uC744
+    \uC2EC\uC5C8\uB2E4. \u201C\uB2E4\uC2DC \uC77C\uC5B4\uC11C\uB824\uBA74 \uB545\uBD80\uD130
+    \uC0B4\uB824\uC57C \uD574.\u201D \uADF8\uC758 \uB208\uBE5B\uC5D0\uC11C \uC791\uC740
+    \uD76C\uB9DD\uC774 \uC6C0\uD2B8\uACE0 \uC788\uC5C8\uB2E4."
+  backgroundImage: {fileID: 21300000, guid: 4ab1b6b4e2eb5454cb73379d052c3783, type: 3}

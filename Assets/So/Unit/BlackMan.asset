@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a07b320f4adcba41b006903a701194a, type: 3}
+  m_Name: BlackMan
+  m_EditorClassIdentifier: 
+  unitId: BlackMan
+  displayName: "\uBE14\uB799\uC7AD"
+  portrait: {fileID: 21300000, guid: e7f9bfe7a3da3b642867d6b0c4fbd1d1, type: 3}
+  bodyParts:
+    Head: {fileID: 8689525943316559907, guid: 2d4ddbcaa077542029456f5c81f2f981, type: 3}
+    Hair: {fileID: 21300000, guid: 224141f741d494348afcb758c4be4f38, type: 3}
+    FaceHair: {fileID: 21300000, guid: c881fe1f539449842b243ff9a21298eb, type: 3}
+    Body: {fileID: -8887937812853701964, guid: 2d4ddbcaa077542029456f5c81f2f981, type: 3}
+    L_Arm: {fileID: -4611891317092368872, guid: 2d4ddbcaa077542029456f5c81f2f981, type: 3}
+    R_Arm: {fileID: -6946035135115773162, guid: 2d4ddbcaa077542029456f5c81f2f981, type: 3}
+    L_Foot: {fileID: 3956046261822928101, guid: 2d4ddbcaa077542029456f5c81f2f981, type: 3}
+    R_Foot: {fileID: 6455547337533666543, guid: 2d4ddbcaa077542029456f5c81f2f981, type: 3}
+  eyeParts:
+    back: {fileID: 797672379561859647, guid: 01c9f277ec47c40b1b864b029d2004cf, type: 3}
+    front: {fileID: 2697600638823719667, guid: 01c9f277ec47c40b1b864b029d2004cf, type: 3}
+  defaultEquipment:
+    rightHand: {fileID: 11400000, guid: e764a346ae189d1418d33c40778cd37a, type: 2}
+    leftHand: {fileID: 0}
+    helmet: {fileID: 0}
+    armor: {fileID: 0}

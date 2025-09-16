@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b598b814566266479f91c4d03aea9ab, type: 3}
+  m_Name: Item_LeatherClothes
+  m_EditorClassIdentifier: 
+  itemId: 10000001
+  displayName: LeatherHelmet
+  rarity: 0
+  icon: {fileID: -4637655676411158975, guid: 5ed80003cb7f545ab87b7c0b79ad2eed, type: 3}
+  tooltipHeader: this is Leather Helmet
+  tooltipBody: very good
+  slot: 3
+  statMods:
+  - stat: 1
+    op: 0
+    value: 10
+  - stat: 2
+    op: 0
+    value: 1
+  visualGroups:
+  - key: armor
+    sprites:
+    - {fileID: -3618802667364733500, guid: a05ebb241a0b14dec9a0d4bdd31301a3, type: 3}
+    - {fileID: -8202439237598021607, guid: a05ebb241a0b14dec9a0d4bdd31301a3, type: 3}
+    - {fileID: -8675011627427599730, guid: a05ebb241a0b14dec9a0d4bdd31301a3, type: 3}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: -6657482867516515422, guid: ed0836d2b0b084f2a842be7fa476e1e5, type: 3}
+    - {fileID: -1701842369826841683, guid: ed0836d2b0b084f2a842be7fa476e1e5, type: 3}
+  groupsToHide: []
+  spumClipOverrides: []
+  spumOverrides: []
+  attackEffect:
+    vfxPrefab: {fileID: 0}
+    vfxLifetime: 0
+    attachToAnchor: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    localScale: {x: 0, y: 0, z: 0}
+    matchSortingGroup: 0
+    orderOffset: 0
+    flipWithAnchorSignX: 0
+    flipByRotateY: 0
+    sfx: {fileID: 0}
+    volume: 0
+    pitch: 0
+    pitchJitter: 0
+    mixerGroup: {fileID: 0}
+    maxInstances: 0
+    instanceCooldown: 0

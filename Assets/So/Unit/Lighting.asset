@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a07b320f4adcba41b006903a701194a, type: 3}
+  m_Name: Lighting
+  m_EditorClassIdentifier: 
+  unitId: Lighting
+  displayName: "\uBC88\uAC1C\uB9E8"
+  portrait: {fileID: 21300000, guid: d7e46c7d742f5489891d6e506f211ede, type: 3}
+  bodyParts:
+    Head: {fileID: 3923885903126733222, guid: d24756e433435b249be5737019648d69, type: 3}
+    Hair: {fileID: 21300000, guid: 11e592b1fafcd784b92a43910cc736b1, type: 3}
+    FaceHair: {fileID: 0}
+    Body: {fileID: 2792606791867966216, guid: d24756e433435b249be5737019648d69, type: 3}
+    L_Arm: {fileID: 5223213533427645220, guid: d24756e433435b249be5737019648d69, type: 3}
+    R_Arm: {fileID: 2554473656886179314, guid: d24756e433435b249be5737019648d69, type: 3}
+    L_Foot: {fileID: 1583482623376728253, guid: d24756e433435b249be5737019648d69, type: 3}
+    R_Foot: {fileID: 5053251350606442050, guid: d24756e433435b249be5737019648d69, type: 3}
+  eyeParts:
+    back: {fileID: 1354325843601906543, guid: e0c299db1654542d0a284e53abe2746e, type: 3}
+    front: {fileID: 1512272119505081995, guid: e0c299db1654542d0a284e53abe2746e, type: 3}
+  defaultEquipment:
+    rightHand: {fileID: 0}
+    leftHand: {fileID: 0}
+    helmet: {fileID: 11400000, guid: 88c116f4ce7949b40b5ec3209894ab1a, type: 2}
+    armor: {fileID: 0}

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a07b320f4adcba41b006903a701194a, type: 3}
+  m_Name: bedman
+  m_EditorClassIdentifier: 
+  unitId: bedman
+  displayName: "\uB3D9\uB124\uC591\uC544\uCE58"
+  portrait: {fileID: 21300000, guid: 7171627f212a1454e92b7f5c2f1f1595, type: 3}
+  bodyParts:
+    Head: {fileID: 6506453535353790088, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
+    Hair: {fileID: 21300000, guid: b6063378e26704067a2587f07d800ee9, type: 3}
+    FaceHair: {fileID: 0}
+    Body: {fileID: -1293775867835138107, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
+    L_Arm: {fileID: 7195734205691627793, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
+    R_Arm: {fileID: 7091322195508142942, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
+    L_Foot: {fileID: -4704719403307617508, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
+    R_Foot: {fileID: -6644030345182470394, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
+  eyeParts:
+    back: {fileID: 1077288200667277590, guid: fd89b34b9905449b48f67c1c962e8ee7, type: 3}
+    front: {fileID: 1589289917378938916, guid: fd89b34b9905449b48f67c1c962e8ee7, type: 3}
+  defaultEquipment:
+    rightHand: {fileID: 11400000, guid: e764a346ae189d1418d33c40778cd37a, type: 2}
+    leftHand: {fileID: 0}
+    helmet: {fileID: 0}
+    armor: {fileID: 0}
