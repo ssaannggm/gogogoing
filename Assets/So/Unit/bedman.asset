@@ -15,6 +15,26 @@ MonoBehaviour:
   unitId: bedman
   displayName: "\uB3D9\uB124\uC591\uC544\uCE58"
   portrait: {fileID: 21300000, guid: 7171627f212a1454e92b7f5c2f1f1595, type: 3}
+  baseStats:
+    maxHp: 200
+    healthRegen: 0
+    lifeOnKill: 0
+    omnivamp: 0
+    attackPower: 10
+    attackSpeed: 1
+    attackRange: 1
+    critChance: 0
+    critDamage: 0
+    damageIncrease: 0
+    defense: 0
+    magicResist: 0
+    evasionChance: 0
+    blockChance: 0
+    blockPower: 0
+    damageReduction: 0
+    moveSpeed: 1
+    abilityHaste: 0
+    tenacity: 0
   bodyParts:
     Head: {fileID: 6506453535353790088, guid: 7212bef95b8a58344944fb6e590be91e, type: 3}
     Hair: {fileID: 21300000, guid: b6063378e26704067a2587f07d800ee9, type: 3}

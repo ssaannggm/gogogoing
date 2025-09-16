@@ -20,9 +20,25 @@ MonoBehaviour:
   tooltipBody: very good
   slot: 0
   statMods:
-  - statType: 5
-    modifierType: 0
-    value: 2
+    add_maxHp: 0
+    add_healthRegen: 0
+    add_lifeOnKill: 0
+    add_attackPower: 0
+    add_defense: 0
+    add_magicResist: 0
+    add_moveSpeed: 0
+    add_abilityHaste: 0
+    add_attackRange: 0
+    add_critDamage: 0
+    add_blockPower: 0
+    mult_attackSpeed: 50
+    mult_critChance: 0
+    mult_omnivamp: 0
+    mult_damageIncrease: 0
+    mult_evasionChance: 0
+    mult_blockChance: 0
+    mult_damageReduction: 0
+    mult_tenacity: 0
   visualGroups:
   - key: rightHand
     sprites:

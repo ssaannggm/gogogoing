@@ -19,7 +19,7 @@ namespace Game.UI
             }
         }
 
-        public void UpdateSlots(PartyMemberState memberState, int characterIndex, InventoryPartyMode controller)
+        public void UpdateSlots(PartyMemberState memberState, int characterIndex, InventoryPartyMode controller, bool isDraggable)
         {
             var dataCatalog = GameManager.I?.Data;
 
@@ -31,7 +31,8 @@ namespace Game.UI
                     currentItem = dataCatalog.GetItemById(itemId);
                 }
 
-                slotUI.Setup(characterIndex, currentItem, controller);
+                // [수정] isDraggable 값을 Setup 함수로 넘겨줍니다.
+                slotUI.Setup(characterIndex, currentItem, controller, isDraggable);
             }
         }
 

@@ -119,7 +119,7 @@ public class AIController : MonoBehaviour
                 FaceTo(_target.position - transform.position);
 
                 // [����] UnitStats�� ���� ���ǵ� CurrentAttackRange�� ����մϴ�.
-                float rangeSqr = _stats.CurrentAttackRange * _stats.CurrentAttackRange;
+                float rangeSqr = _stats.CurrentStats.attackRange * _stats.CurrentStats.attackRange;
                 float distSqr = (_target.position - transform.position).sqrMagnitude;
 
                 if (distSqr > rangeSqr)
@@ -152,7 +152,7 @@ public class AIController : MonoBehaviour
                     else
                     {
                         // ��Ÿ� �ȿ� ������ �ٽ� ����, �ƴϸ� �߰�
-                        float currentRangeSqr = _stats.CurrentAttackRange * _stats.CurrentAttackRange;
+                        float currentRangeSqr = _stats.CurrentStats.attackRange * _stats.CurrentStats.attackRange;
                         if ((_target.position - transform.position).sqrMagnitude <= currentRangeSqr)
                         {
                             EnterAttack();
@@ -167,12 +167,12 @@ public class AIController : MonoBehaviour
         }
 
         // --- ü�� ��� ���� ---
-        if (_state != AIState.Death && _stats.CurrentHealthRegen > 0)
+        if (_state != AIState.Death && _stats.CurrentStats.healthRegen > 0)
         {
             _regenTimer += Time.deltaTime;
             if (_regenTimer >= 1f)
             {
-                _health.Heal(_stats.CurrentHealthRegen);
+                _health.Heal(_stats.CurrentStats.healthRegen);
                 _regenTimer -= 1f;
             }
         }
@@ -210,7 +210,7 @@ public class AIController : MonoBehaviour
         _state = AIState.Attack;
 
         // [����] ���� ���� ��ٿ� ��� (attackSpeed�� 2�̸� 0.5��)
-        _attackCooldownTimer = 1f / _stats.CurrentAttackSpeed;
+        _attackCooldownTimer = 1f / _stats.CurrentStats.attackSpeed;
     }
 
     void FaceTo(Vector2 dir)

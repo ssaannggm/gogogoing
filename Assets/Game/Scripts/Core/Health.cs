@@ -1,4 +1,4 @@
-﻿// Assets/Game/Scripts/Combat/Health.cs (수정 완료된 최종 코드)
+﻿// Health.cs - 최종 수정본 (복사/붙여넣기)
 using System;
 using UnityEngine;
 using Game.Combat;
@@ -11,12 +11,12 @@ public sealed class Health : MonoBehaviour
     public event Action<HitInfo> OnHitReceived;
     public event Action OnDeath;
 
-    // 외부에서 현재 체력을 안전하게 읽을 수 있는 public 프로퍼티
     public float CurrentHP { get; private set; }
+    public float MaxHP { get; private set; } // [추가] 최대 체력도 저장
     public bool IsDead => _isDead;
 
     private UnitStats _stats;
-    private AnimBridge _anim;
+    private AnimBridge _anim; // SPUM 애니메이션 브릿지
     private bool _isDead = false;
 
     void Awake()
@@ -25,13 +25,15 @@ public sealed class Health : MonoBehaviour
         _anim = GetComponentInChildren<AnimBridge>(true);
     }
 
-    // Start에서 UnitStats의 최종 계산된 maxHp를 가져와 초기화합니다.
-    void Start()
+    /// <summary>
+    /// [수정] BattleManager가 호출할 초기화 함수. Start() 대신 사용합니다.
+    /// </summary>
+    public void Initialize(float maxHp)
     {
-        // UnitStats의 Awake -> RecalculateStats()가 먼저 실행된 후,
-        // Start에서 그 최종값을 가져옵니다.
-        CurrentHP = _stats.CurrentMaxHp;
-        OnHealthChanged?.Invoke(CurrentHP, _stats.CurrentMaxHp);
+        MaxHP = maxHp;
+        CurrentHP = MaxHP;
+        _isDead = false;
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
     }
 
     public void TakeDamage(float damageAmount)
@@ -51,7 +53,7 @@ public sealed class Health : MonoBehaviour
         CurrentHP = Mathf.Max(0f, CurrentHP - damageAmount);
 
         OnHitReceived?.Invoke(hit);
-        OnHealthChanged?.Invoke(CurrentHP, _stats.CurrentMaxHp);
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP); // [수정] _stats.CurrentMaxHp -> MaxHP
 
         if (CurrentHP <= 0)
         {
@@ -63,18 +65,20 @@ public sealed class Health : MonoBehaviour
     {
         if (_isDead || healAmount <= 0) return;
 
-        // 최대 체력을 넘지 않도록 _stats.CurrentMaxHp를 기준으로 제한합니다.
-        CurrentHP = Mathf.Min(_stats.CurrentMaxHp, CurrentHP + healAmount);
-
-        OnHealthChanged?.Invoke(CurrentHP, _stats.CurrentMaxHp);
+        // [수정] _stats.CurrentMaxHp -> MaxHP
+        CurrentHP = Mathf.Min(MaxHP, CurrentHP + healAmount);
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
     }
 
     private void Die()
     {
-        if (_isDead) return; // 중복 실행 방지
+        if (_isDead) return;
         _isDead = true;
 
         OnDeath?.Invoke();
+
+        // PlayerState Enum에 맞게 수정이 필요할 수 있습니다.
+        // 예: PlayerState.DEATH -> PlayerState.Die
         _anim?.PlayAnimation(PlayerState.DEATH, 0);
     }
 }

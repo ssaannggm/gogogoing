@@ -15,6 +15,26 @@ MonoBehaviour:
   unitId: Lighting
   displayName: "\uBC88\uAC1C\uB9E8"
   portrait: {fileID: 21300000, guid: d7e46c7d742f5489891d6e506f211ede, type: 3}
+  baseStats:
+    maxHp: 200
+    healthRegen: 0
+    lifeOnKill: 0
+    omnivamp: 0
+    attackPower: 10
+    attackSpeed: 1
+    attackRange: 1
+    critChance: 0
+    critDamage: 0
+    damageIncrease: 0
+    defense: 0
+    magicResist: 0
+    evasionChance: 0
+    blockChance: 0
+    blockPower: 0
+    damageReduction: 0
+    moveSpeed: 1
+    abilityHaste: 0
+    tenacity: 0
   bodyParts:
     Head: {fileID: 3923885903126733222, guid: d24756e433435b249be5737019648d69, type: 3}
     Hair: {fileID: 21300000, guid: 11e592b1fafcd784b92a43910cc736b1, type: 3}

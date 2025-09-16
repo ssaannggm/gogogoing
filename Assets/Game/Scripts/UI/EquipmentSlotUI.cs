@@ -1,4 +1,4 @@
-﻿// EquipmentSlotUI.cs - 전체 코드
+﻿// Assets/Game/Scripts/UI/EquipmentSlotUI.cs (최종 수정본)
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -13,20 +13,18 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
 
     [Header("UI 참조")]
     [SerializeField] private Image iconImage;
-    [SerializeField] private Image backgroundImage;
+    [SerializeField] private CanvasGroup _iconCanvasGroup;
 
-    private CanvasGroup _canvasGroup; // 드래그 시 아이콘 숨기기용
     private InventoryPartyMode _controller;
     private ItemSO _currentItem;
     private bool _isDraggable = true;
 
     void Awake()
     {
-        if (backgroundImage == null) backgroundImage = GetComponent<Image>();
-        _canvasGroup = GetComponentInChildren<CanvasGroup>(); // 아이콘을 감싸는 CanvasGroup 필요
-        if (_canvasGroup == null && iconImage != null)
+        if (_iconCanvasGroup == null && iconImage != null)
         {
-            _canvasGroup = iconImage.gameObject.AddComponent<CanvasGroup>();
+            _iconCanvasGroup = iconImage.GetComponent<CanvasGroup>();
+            if (_iconCanvasGroup == null) _iconCanvasGroup = iconImage.gameObject.AddComponent<CanvasGroup>();
         }
     }
 
@@ -34,60 +32,56 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
     {
         CharacterIndex = characterIndex;
         _controller = controller;
-        _isDraggable = isDraggable;
-        SetItem(item);
-    }
-
-    public void SetItem(ItemSO item)
-    {
         _currentItem = item;
+        _isDraggable = isDraggable;
+
         bool hasItem = item != null;
         if (iconImage)
         {
             iconImage.sprite = hasItem ? item.icon : null;
-            iconImage.color = hasItem ? Color.white : Color.clear;
+        }
+        if (_iconCanvasGroup)
+        {
+            _iconCanvasGroup.alpha = hasItem ? 1f : 0f;
         }
     }
 
-    // --- 드롭: 다른 아이템을 이 슬롯에 놓을 때 ---
     public void OnDrop(PointerEventData eventData)
     {
         var itemIcon = eventData.pointerDrag.GetComponent<ItemIconUI>();
         if (itemIcon == null || itemIcon.ItemData == null) return;
 
-        // 슬롯 타입이 맞는 아이템만 장착 가능
         if (itemIcon.ItemData.slot == this.slotType)
         {
             _controller?.HandleEquipRequest(itemIcon.ItemData, this.CharacterIndex, this.slotType);
         }
     }
 
-    // --- 드래그: 장착된 아이템을 끌기 시작할 때 ---
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (_currentItem == null || !_isDraggable) return;
 
-        // 1. 임시 '유령' 아이콘 생성
         var iconGO = Instantiate(_controller.GetItemIconPrefab(), _controller.dragParent);
         var ghostIcon = iconGO.GetComponent<ItemIconUI>();
-
-        // 2. [핵심] 유령 아이콘에 원본 출처 정보를 저장
         ghostIcon.SetupAsGhost(_currentItem, _controller, this);
+        eventData.pointerDrag = iconGO;
 
-        eventData.pointerDrag = iconGO; // 드래그 대상을 유령 아이콘으로 지정
-
-        if (_canvasGroup) _canvasGroup.alpha = 0.5f; // 원래 슬롯 아이콘은 반투명하게
+        // 드래그하는 동안 원래 아이콘은 반투명하게 만듭니다.
+        if (_iconCanvasGroup) _iconCanvasGroup.alpha = 0.5f;
     }
 
     public void OnDrag(PointerEventData eventData) { }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        // 드래그가 끝나면 원래 슬롯 아이콘을 다시 보이게 함
-        // 실제 데이터 처리는 OnDrop에서 이루어지고, UI 갱신은 RunManager의 이벤트가 처리하므로
-        // 여기서는 시각적인 부분만 원래대로 돌려놓으면 됩니다.
-        if (_canvasGroup) _canvasGroup.alpha = 1f;
+        // [✨✨✨ 핵심 수정 ✨✨✨]
+        // 드래그가 끝났을 때, 일단 원래 아이콘의 투명도를 100%로 되돌립니다.
+        // - 드롭에 성공했다면: 잠시 뒤 RunManager 이벤트가 이 슬롯을 비우고 투명도를 0으로 다시 설정할 것입니다.
+        // - 드롭에 실패했다면: 이 코드가 실행되어 아이템이 원래 모습으로 돌아옵니다.
+        if (_iconCanvasGroup) _iconCanvasGroup.alpha = 1f;
 
-        // 유령 아이콘은 ItemIconUI의 OnEndDrag에서 스스로 파괴됨
+        // 이제 "빨리 드롭해야 하는 문제"가 해결되었는지 확인해보세요.
+        // 만약 여전히 문제가 발생한다면, 이 아래 로그가 찍히는지 확인이 필요합니다.
+        // Debug.Log($"OnEndDrag from {gameObject.name}. Drop Target: {(eventData.pointerEnter != null ? eventData.pointerEnter.name : "None")}");
     }
 }

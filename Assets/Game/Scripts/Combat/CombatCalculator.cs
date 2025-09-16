@@ -1,43 +1,51 @@
-// Assets/Game/Scripts/Combat/CombatCalculator.cs (수정 완료된 코드)
+// CombatCalculator.cs - 최종 수정본 (복사/붙여넣기)
 using UnityEngine;
-using Game.Combat; // HitInfo, HitOutcome을 사용하기 위해
+using Game.Combat;
 
 public static class CombatCalculator
 {
-
     /// <summary>
     /// 공격자와 방어자의 스탯을 기반으로 최종 HitInfo를 생성하여 반환합니다.
     /// </summary>
     public static HitInfo CalculateAttack(UnitStats attacker, UnitStats defender)
     {
         // --- 1. 방어 판정 (회피 > 막기) ---
-        if (Random.Range(0f, 100f) < defender.evasionChance)
+        // [수정] defender.evasionChance -> defender.CurrentStats.evasionChance
+        if (Random.Range(0f, 100f) < defender.CurrentStats.evasionChance)
         {
             return new HitInfo { outcome = HitOutcome.Evade, instigator = attacker.gameObject };
         }
 
-        bool isBlocked = Random.Range(0f, 100f) < defender.blockChance;
+        // [수정] defender.blockChance -> defender.CurrentStats.blockChance
+        bool isBlocked = Random.Range(0f, 100f) < defender.CurrentStats.blockChance;
 
         // --- 2. 기본 피해량 계산 (공격력 + 치명타) ---
-        float damage = attacker.attackPower;
-        bool isCritical = Random.Range(0f, 100f) < attacker.critChance;
+        // [수정] attacker.attackPower -> attacker.CurrentStats.attackPower
+        float damage = attacker.CurrentStats.attackPower;
+
+        // [수정] attacker.critChance -> attacker.CurrentStats.critChance
+        bool isCritical = Random.Range(0f, 100f) < attacker.CurrentStats.critChance;
         if (isCritical)
         {
-            damage *= (attacker.critDamage / 100f);
+            // [수정] attacker.critDamage -> attacker.CurrentStats.critDamage
+            damage *= (attacker.CurrentStats.critDamage / 100f);
         }
 
         // --- 3. 최종 피해량 보너스/감소 적용 ---
-        damage *= (1 + attacker.damageIncrease / 100f);
+        // [수정] attacker.damageIncrease -> attacker.CurrentStats.damageIncrease
+        damage *= (1 + attacker.CurrentStats.damageIncrease / 100f);
 
-        float defenseMultiplier = 100f / (100f + defender.defense);
+        // [수정] defender.defense -> defender.CurrentStats.defense
+        float defenseMultiplier = 100f / (100f + defender.CurrentStats.defense);
         damage *= defenseMultiplier;
 
-        damage *= (1 - defender.damageReduction / 100f);
+        // [수정] defender.damageReduction -> defender.CurrentStats.damageReduction
+        damage *= (1 - defender.CurrentStats.damageReduction / 100f);
 
-        // [수정] 막기에 성공했다면, 이제 고정된 값이 아닌 방어자의 'blockPower' 스탯을 사용합니다.
         if (isBlocked)
         {
-            damage *= (1 - defender.blockPower / 100f);
+            // [수정] defender.blockPower -> defender.CurrentStats.blockPower
+            damage *= (1 - defender.CurrentStats.blockPower / 100f);
         }
 
         // --- 4. 최종 HitInfo 생성 및 반환 ---

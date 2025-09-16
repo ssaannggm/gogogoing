@@ -15,6 +15,26 @@ MonoBehaviour:
   unitId: Poo
   displayName: Poo
   portrait: {fileID: 21300000, guid: 4b3e1459fcbc24c858091068419d81c9, type: 3}
+  baseStats:
+    maxHp: 200
+    healthRegen: 0
+    lifeOnKill: 0
+    omnivamp: 0
+    attackPower: 10
+    attackSpeed: 1
+    attackRange: 1
+    critChance: 0
+    critDamage: 0
+    damageIncrease: 0
+    defense: 0
+    magicResist: 0
+    evasionChance: 0
+    blockChance: 0
+    blockPower: 0
+    damageReduction: 0
+    moveSpeed: 1
+    abilityHaste: 0
+    tenacity: 0
   bodyParts:
     Head: {fileID: 3923885903126733222, guid: 470cfb1e4f7865c40b83d403037c90c9, type: 3}
     Hair: {fileID: 21300000, guid: 418362a88ec484e62b5aae771d2e687e, type: 3}

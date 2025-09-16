@@ -1,16 +1,16 @@
-﻿// Assets/Game/Scripts/Runtime/UnitLoadout.cs (수정 완료된 최종 코드)
+﻿// Assets/Game/Scripts/Runtime/UnitLoadout.cs (최종 수정본)
 using System;
 using UnityEngine;
 using Game.Items;
 using Game.Combat;
+using Game.Data; // DataCatalog를 사용하기 위해 추가
 
 namespace Game.Runtime
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(UnitStats))] // UnitStats가 항상 있도록 보장
     public sealed class UnitLoadout : MonoBehaviour
     {
-        [Header("Equipped Items")]
+        [Header("Equipped Items (Runtime)")]
         public ItemSO leftHand, rightHand, helmet, armor;
 
         [Header("VFX Emitter")]
@@ -18,87 +18,53 @@ namespace Game.Runtime
 
         public event Action OnLoadoutChanged;
 
-        private UnitStats _stats;
-
         void Awake()
         {
-            _stats = GetComponent<UnitStats>();
+            // 이 컴포넌트는 이제 스스로 아무것도 하지 않고, BattleManager가 초기화해주기를 기다립니다.
             if (!emitter) emitter = GetComponentInChildren<AttackVfxEmitter>(true);
-
-            // 시작 시 기본 장착된 아이템들의 스탯을 한번 계산해줍니다.
-            UpdateAllStatsAndEffects();
         }
 
-        public void Equip(ItemSO item)
+        /// <summary>
+        /// [핵심] BattleManager가 호출할 새로운 초기화 함수.
+        /// PartyMemberState를 기반으로 장비 정보를 설정하고 시각적 요소를 업데이트합니다.
+        /// </summary>
+        public void InitializeLoadout(PartyMemberState memberState, DataCatalog data)
         {
-            // --- ✨ 디버그 로그 1 ✨ ---
-            // 이 로그가 안 찍히면, UI에서 이 함수를 호출하는 것부터 실패한 것입니다.
-            Debug.Log($"<color=yellow>1. [UnitLoadout] Equip 함수 호출됨: {item?.displayName ?? "null"}</color>");
+            // 1. 모든 장비 슬롯 초기화
+            leftHand = null;
+            rightHand = null;
+            helmet = null;
+            armor = null;
 
-            if (!item) return;
-            Unequip(item.slot);
-
-            switch (item.slot)
+            // 2. PartyMemberState에 있는 아이템 ID를 기반으로 ItemSO를 찾아 할당
+            foreach (var itemEntry in memberState.equippedItemIds)
             {
-                case EquipSlot.LeftHand: leftHand = item; break;
-                case EquipSlot.RightHand: rightHand = item; break;
-                case EquipSlot.Helmet: helmet = item; break;
-                case EquipSlot.Armor: armor = item; break;
-            }
-            UpdateAllStatsAndEffects();
-        }
+                var itemSO = data.GetItemById(itemEntry.Value);
+                if (itemSO == null) continue;
 
-        public void Unequip(EquipSlot slot)
-        {
-            // 해당 슬롯의 아이템을 null로 만듭니다.
-            switch (slot)
-            {
-                case EquipSlot.LeftHand: leftHand = null; break;
-                case EquipSlot.RightHand: rightHand = null; break;
-                case EquipSlot.Helmet: helmet = null; break;
-                case EquipSlot.Armor: armor = null; break;
+                switch (itemEntry.Key) // itemEntry.Key는 EquipSlot 입니다.
+                {
+                    case EquipSlot.LeftHand: leftHand = itemSO; break;
+                    case EquipSlot.RightHand: rightHand = itemSO; break;
+                    case EquipSlot.Helmet: helmet = itemSO; break;
+                    case EquipSlot.Armor: armor = itemSO; break;
+                }
             }
 
-            UpdateAllStatsAndEffects();
-        }
-
-        // ✨ 모든 스탯과 효과를 처음부터 다시 계산하고 적용하는 통합 함수
-        private void UpdateAllStatsAndEffects()
-        {
-            if (_stats == null) _stats = GetComponent<UnitStats>();
-
-            // 1. UnitStats의 모든 추가 능력치를 초기화합니다.
-            _stats.ClearAllModifiers();
-
-            // 2. 현재 장착된 모든 아이템의 능력치를 다시 추가합니다.
-            if (leftHand) _stats.AddModifiers(leftHand.statMods);
-            if (rightHand) _stats.AddModifiers(rightHand.statMods);
-            if (helmet) _stats.AddModifiers(helmet.statMods);
-            if (armor) _stats.AddModifiers(armor.statMods);
-
-            // 3. UnitStats에게 최종 스탯을 다시 계산하라고 명령합니다.
-            _stats.RecalculateStats();
-
-            // 4. 시각/공격 효과를 업데이트합니다.
+            // 3. 시각/공격 효과 업데이트
             ApplyToEmitter();
 
-            // 5. 장비 변경 이벤트를 다른 곳에 알립니다 (스프라이트 변경용).
+            // 4. 장비 변경 이벤트를 다른 곳(예: SpumVisualApplier)에 알림
             OnLoadoutChanged?.Invoke();
         }
 
         public void ApplyToEmitter()
         {
-            // --- ✨ 디버그 로그 2 ✨ ---
-            // emitter가 null이면 연결이 끊어진 것입니다.
             if (!emitter)
             {
-                Debug.LogError("-> 문제 발견: UnitLoadout에 AttackVfxEmitter가 연결되지 않았습니다!");
+                Debug.LogError("UnitLoadout에 AttackVfxEmitter가 연결되지 않았습니다!", gameObject);
                 return;
             }
-
-            // rightHand 아이템과 그 VFX 프리팹의 이름을 로그로 찍어봅니다.
-            string vfxName = (rightHand && rightHand.attackEffect.vfxPrefab != null) ? rightHand.attackEffect.vfxPrefab.name : "비어있음";
-            Debug.Log($"<color=lime>2. [UnitLoadout] ApplyToEmitter 실행. 오른손 무기({rightHand?.displayName ?? "없음"})의 VFX는? -> {vfxName}</color>");
 
             emitter.leftDef = leftHand ? leftHand.attackEffect : ItemSO.AttackEffectDef.Default;
             emitter.rightDef = rightHand ? rightHand.attackEffect : ItemSO.AttackEffectDef.Default;

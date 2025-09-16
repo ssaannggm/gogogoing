@@ -1,4 +1,4 @@
-// InventoryListPanel.cs - ÀüÃ¼ ÄÚµå
+ï»¿// InventoryListPanel.cs - ì „ì²´ ì½”ë“œ
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Game.Services;
@@ -10,7 +10,7 @@ namespace Game.UI
 {
     public class InventoryListPanel : MonoBehaviour, IDropHandler
     {
-        [Header("UI ¼³Á¤")]
+        [Header("UI ì„¤ì •")]
         [SerializeField] private Transform _contentParent;
 
         private List<GameObject> _spawnedIcons = new List<GameObject>();
@@ -45,13 +45,15 @@ namespace Game.UI
             var droppedIcon = eventData.pointerDrag.GetComponent<ItemIconUI>();
             if (droppedIcon == null) return;
 
-            // [ÇÙ½É] µå·ÓµÈ ¾ÆÀÌÄÜÀÌ Àåºñ ½½·Ô¿¡¼­ ¿Â 'À¯·É'ÀÏ °æ¿ì¿¡¸¸ Àåºñ ÇØÁ¦ Ã³¸®
-            if (droppedIcon.IsGhost && droppedIcon.SourceSlot != null)
+            // [âœ¨ í•µì‹¬ ìˆ˜ì •]
+            // ë“œë¡­ëœ ì•„ì´ì½˜ì´ ì¥ë¹„ ìŠ¬ë¡¯ì—ì„œ ì˜¨ 'ìœ ë ¹'ì´ê³ ,
+            // ê·¸ ìœ ë ¹ ì•„ì´ì½˜ì´ ì»¨íŠ¸ë¡¤ëŸ¬(controller)ì— ëŒ€í•œ ì°¸ì¡°ë¥¼ ê°€ì§€ê³  ìˆì„ ê²½ìš°ì—ë§Œ ì¥ë¹„ í•´ì œ ì²˜ë¦¬
+            if (droppedIcon.IsGhost && droppedIcon.SourceSlot != null && droppedIcon.Controller != null)
             {
                 var sourceSlot = droppedIcon.SourceSlot;
-                var controller = sourceSlot.GetComponentInParent<InventoryPartyMode>(); // ÄÁÆ®·Ñ·¯ Ã£±â
-
-                controller?.HandleUnequipRequest(sourceSlot.CharacterIndex, sourceSlot.slotType);
+                // GetComponentInParent ëŒ€ì‹ , ìœ ë ¹ ì•„ì´ì½˜ì´ ì§ì ‘ ë“¤ê³  ìˆëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ ì°¸ì¡°ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
+                // ì´ê²ƒì´ í›¨ì”¬ ì•ˆì •ì ì…ë‹ˆë‹¤.
+                droppedIcon.Controller.HandleUnequipRequest(sourceSlot.CharacterIndex, sourceSlot.slotType);
             }
         }
     }

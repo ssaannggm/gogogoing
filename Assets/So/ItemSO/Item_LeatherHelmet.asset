@@ -20,17 +20,47 @@ MonoBehaviour:
   tooltipBody: very good
   slot: 2
   statMods:
-  - stat: 1
-    op: 0
-    value: 10
-  - stat: 2
-    op: 0
-    value: 1
+    add_maxHp: 0
+    add_healthRegen: 0
+    add_lifeOnKill: 0
+    add_attackPower: 0
+    add_defense: 5
+    add_magicResist: 0
+    add_moveSpeed: 0
+    add_abilityHaste: 0
+    add_attackRange: 0
+    add_critDamage: 0
+    add_blockPower: 0
+    mult_attackSpeed: 0
+    mult_critChance: 0
+    mult_omnivamp: 0
+    mult_damageIncrease: 0
+    mult_evasionChance: 0
+    mult_blockChance: 0
+    mult_damageReduction: 0
+    mult_tenacity: 0
   visualGroups:
   - key: helmet
     sprites:
     - {fileID: 0}
     - {fileID: 21300000, guid: 84f507f509f5547a2904b830b2e98874, type: 3}
   groupsToHide: []
-  spumClipOverrides: []
-  spumOverrides: []
+  animationOverrides: []
+  attackEffect:
+    vfxPrefab: {fileID: 0}
+    vfxLifetime: 0.6
+    attachToAnchor: 1
+    localPosition: {x: 0, y: 0, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    localScale: {x: 1, y: 1, z: 1}
+    matchSortingGroup: 1
+    orderOffset: 10
+    sfx: {fileID: 0}
+    volume: 1
+    pitch: 1
+    pitchJitter: 0.05
+    mixerGroup: {fileID: 0}
+    maxInstances: 0
+    instanceCooldown: 0.02
+    alignToAim: 1
+    angleOffset: 0

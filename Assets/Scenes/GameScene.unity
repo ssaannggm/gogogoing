@@ -1026,7 +1026,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1419,7 +1419,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1794,7 +1794,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2815,7 +2815,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _contentParent: {fileID: 1375003365}
-  _itemIconPrefab: {fileID: 484132991512786111, guid: efe3d2e00c636314b8432eafcc544071, type: 3}
 --- !u!1 &1109939606
 GameObject:
   m_ObjectHideFlags: 0
@@ -3519,11 +3518,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotsParent: {fileID: 1619561254}
   slotButtonPrefab: {fileID: 8821215330280922113, guid: 5933a9c8469966f4388b8e2948232295, type: 3}
-  rosterParent: {fileID: 0}
-  rosterButtonPrefab: {fileID: 0}
-  saveButton: {fileID: 0}
-  clearButton: {fileID: 0}
-  hintText: {fileID: 0}
+  _normalColor: {r: 1, g: 1, b: 1, a: 1}
+  _selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &1258892985
 GameObject:
   m_ObjectHideFlags: 0
@@ -3578,8 +3574,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotType: 0
   iconImage: {fileID: 1258892989}
-  backgroundImage: {fileID: 0}
-  nameText: {fileID: 864247678}
+  _iconCanvasGroup: {fileID: 0}
 --- !u!114 &1258892988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4218,7 +4213,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -4434,7 +4429,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -4924,8 +4919,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotType: 2
   iconImage: {fileID: 1560555892}
-  backgroundImage: {fileID: 0}
-  nameText: {fileID: 1610260690}
+  _iconCanvasGroup: {fileID: 0}
 --- !u!114 &1560555891
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5158,7 +5152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -5495,8 +5489,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotType: 1
   iconImage: {fileID: 1667752646}
-  backgroundImage: {fileID: 0}
-  nameText: {fileID: 651753162}
+  _iconCanvasGroup: {fileID: 0}
 --- !u!114 &1667752645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6493,7 +6486,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0.392}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -6843,8 +6836,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotType: 3
   iconImage: {fileID: 1982560730}
-  backgroundImage: {fileID: 0}
-  nameText: {fileID: 705097640}
+  _iconCanvasGroup: {fileID: 0}
 --- !u!114 &1982560729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6978,7 +6970,6 @@ MonoBehaviour:
   _inventoryListPanel: {fileID: 1086228397}
   _characterPortrait: {fileID: 1399099089}
   _confirmButton: {fileID: 1442713040}
-  _characterPrefab: {fileID: 4843508792553828991, guid: 3716bd5c257bbe840ba209af67aff62e, type: 3}
   _itemIconPrefab: {fileID: 484132991512786111, guid: efe3d2e00c636314b8432eafcc544071, type: 3}
   dragParent: {fileID: 889901065}
 --- !u!1 &2019558090
@@ -7307,11 +7298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotsParent: {fileID: 1283766517}
   slotButtonPrefab: {fileID: 8821215330280922113, guid: 5933a9c8469966f4388b8e2948232295, type: 3}
-  rosterParent: {fileID: 0}
-  rosterButtonPrefab: {fileID: 0}
-  saveButton: {fileID: 0}
-  clearButton: {fileID: 0}
-  hintText: {fileID: 0}
+  _normalColor: {r: 1, g: 1, b: 1, a: 1}
+  _selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!224 &2075733758
 RectTransform:
   m_ObjectHideFlags: 0

@@ -106,7 +106,7 @@ public class RecruitmentManager : MonoBehaviour, IGameMode
                 {
                     if (itemSO != null)
                     {
-                        run.AddItemToInventory(itemSO);
+                        run.AddItemToInventory(itemSO.itemId);
                     }
                 }
                 Debug.Log($"시작 키트 '{_startingKit.name}'의 아이템들을 추가했습니다.");

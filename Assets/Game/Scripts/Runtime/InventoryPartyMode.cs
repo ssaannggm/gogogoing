@@ -1,4 +1,4 @@
-﻿// InventoryPartyMode.cs - 전체 코드
+﻿// InventoryPartyMode.cs (최종 수정본)
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Services;
@@ -23,13 +23,11 @@ namespace Game.Runtime
         [SerializeField] private Button _confirmButton;
 
         [Header("프리팹")]
-        // [삭제] 캐릭터 프리팹은 더 이상 여기서 필요 없음
         [SerializeField] private GameObject _itemIconPrefab;
 
         [Header("드래그앤드롭 설정")]
         public Transform dragParent;
 
-        // [수정] 현재 런의 파티/인벤토리 데이터에 대한 참조만 유지
         private RunManager _currentRun;
         private int _selectedMemberIndex = -1;
         private bool _isReadOnly = false;
@@ -39,24 +37,16 @@ namespace Game.Runtime
 
         void Awake()
         {
-            if (!_partySetupView) _partySetupView = GetComponentInChildren<PartySetupView>(true);
-            if (!_statDisplayPanel) _statDisplayPanel = GetComponentInChildren<StatDisplayPanel>(true);
-            if (!_equipmentSlotPanel) _equipmentSlotPanel = GetComponentInChildren<EquipmentSlotPanel>(true);
-            if (!_inventoryListPanel) _inventoryListPanel = GetComponentInChildren<InventoryListPanel>(true);
-            if (_confirmButton != null) _confirmButton.onClick.AddListener(OnConfirmClicked);
+            // [수정] 모든 UI 참조가 제대로 연결되었는지 확인
+            if (!_partySetupView) Debug.LogError("PartySetupView가 인스펙터에 연결되지 않았습니다!", this);
+            if (!_statDisplayPanel) Debug.LogError("StatDisplayPanel이 인스펙터에 연결되지 않았습니다!", this);
+            if (!_equipmentSlotPanel) Debug.LogError("EquipmentSlotPanel이 인스PECTOR에 연결되지 않았습니다!", this);
+            if (!_inventoryListPanel) Debug.LogError("InventoryListPanel이 인스펙터에 연결되지 않았습니다!", this);
+            if (_confirmButton) _confirmButton.onClick.AddListener(OnConfirmClicked);
         }
 
-        // [추가] RunManager의 데이터 변경 이벤트를 구독
-        private void OnEnable()
-        {
-            RunManager.OnRunDataChanged += RefreshAllUI;
-        }
-
-        // [추가] 이벤트 구독 해제 (메모리 누수 방지)
-        private void OnDisable()
-        {
-            RunManager.OnRunDataChanged -= RefreshAllUI;
-        }
+        private void OnEnable() => RunManager.OnRunDataChanged += RefreshAllUI;
+        private void OnDisable() => RunManager.OnRunDataChanged -= RefreshAllUI;
 
         public void EnterMode() => Open(false);
 
@@ -72,8 +62,7 @@ namespace Game.Runtime
                 gameObject.SetActive(false);
                 return;
             }
-
-            RefreshAllUI(); // UI 최초 갱신
+            RefreshAllUI();
         }
 
         public void ExitMode()
@@ -83,8 +72,8 @@ namespace Game.Runtime
 
         private void OnConfirmClicked()
         {
-            var battleManager = FindObjectOfType<Game.Battle.BattleManager>();
-            if (battleManager != null && battleManager.State == Game.Battle.BattleState.Spawning)
+            var battleManager = Battle.BattleManager.Instance; // 싱글톤 인스턴스 사용
+            if (battleManager != null && battleManager.State == Battle.BattleState.Spawning)
             {
                 battleManager.StartBattle();
                 ExitMode();
@@ -95,26 +84,24 @@ namespace Game.Runtime
             }
         }
 
-        // [수정] 이제 이 함수는 RunManager의 데이터를 읽어 UI에 뿌려주는 역할만 합니다.
         private void RefreshAllUI()
         {
             if (_currentRun == null || !gameObject.activeInHierarchy) return;
 
-            // 1. 파티 슬롯 목록 갱신
-            _partySetupView.BuildSlots(4, GetSlotLabel, SelectPartyMember);
-
-            // 2. 선택된 멤버가 유효한지 확인하고, 아니면 0번으로 재설정
-            if (_selectedMemberIndex < 0 || _selectedMemberIndex >= _currentRun.PartyState.Count)
+            if (_partySetupView)
             {
-                _selectedMemberIndex = 0;
+                _partySetupView.BuildSlots(4, GetSlotLabel, SelectPartyMember);
+                if (_selectedMemberIndex < 0 || _selectedMemberIndex >= _currentRun.PartyState.Count)
+                {
+                    _selectedMemberIndex = (_currentRun.PartyState.Count > 0) ? 0 : -1;
+                }
+                _partySetupView.SetSelection(_selectedMemberIndex);
             }
-            _partySetupView.SetSelection(_selectedMemberIndex);
 
-            // 3. 선택된 멤버 정보 표시
             DisplayMemberDetails();
 
-            // 4. 인벤토리 목록 갱신
-            _inventoryListPanel?.Refresh(this, _currentRun.InventoryItemIds, !_isReadOnly);
+            if (_inventoryListPanel)
+                _inventoryListPanel.Refresh(this, _currentRun.InventoryItemIds, !_isReadOnly);
         }
 
         private string GetSlotLabel(int index)
@@ -130,20 +117,18 @@ namespace Game.Runtime
         private void SelectPartyMember(int index)
         {
             if (index < 0 || index >= _currentRun.PartyState.Count) return;
-
             _selectedMemberIndex = index;
-            _partySetupView.SetSelection(index); // 시각적으로 선택되었음을 표시
+            if (_partySetupView) _partySetupView.SetSelection(index);
             DisplayMemberDetails();
         }
 
-        // [수정] 더 이상 임시 캐릭터 인스턴스를 사용하지 않음
         private void DisplayMemberDetails()
         {
             if (_selectedMemberIndex < 0 || _selectedMemberIndex >= _currentRun.PartyState.Count)
             {
-                // 선택된 멤버가 없을 때 UI 클리어
                 if (_characterPortrait) _characterPortrait.enabled = false;
-                if (_statDisplayPanel) _statDisplayPanel.UpdateStats(null); // StatDisplayPanel은 null을 처리할 수 있어야 함
+                // [수정] UpdateStats(null, null)로 호출
+                if (_statDisplayPanel) _statDisplayPanel.UpdateStats(null, null);
                 if (_equipmentSlotPanel) _equipmentSlotPanel.UpdateSlots(null, -1, this, !_isReadOnly);
                 return;
             }
@@ -158,13 +143,9 @@ namespace Game.Runtime
                 _characterPortrait.enabled = true;
             }
 
-            // [핵심] 임시 캐릭터의 UnitStats 대신 PartyMemberState 자체를 넘겨 스탯을 표시
-            // StatDisplayPanel이 이 데이터를 기반으로 스탯을 '계산'해서 보여주도록 수정해야 합니다.
             if (_statDisplayPanel != null)
             {
-                // TODO: StatDisplayPanel이 UnitSO와 PartyMemberState를 받아 스탯을 계산하고 표시하도록 수정해야 합니다.
-                // 지금은 임시로 null을 전달합니다.
-                _statDisplayPanel.UpdateStats(null); // 이 부분은 StatDisplayPanel 수정 후 바꿔야 합니다.
+                _statDisplayPanel.UpdateStats(unitSO, memberState);
             }
 
             if (_equipmentSlotPanel != null)
@@ -173,44 +154,26 @@ namespace Game.Runtime
             }
         }
 
-        // --- 드래그 앤 드롭 로직 핸들러 ---
-        // 모든 데이터 변경은 이 함수들을 통해 RunManager에 요청됩니다.
-
         public void HandleEquipRequest(ItemSO itemToEquip, int characterIndex, EquipSlot targetSlot)
         {
             if (_isReadOnly || itemToEquip == null || characterIndex < 0) return;
-
-            // 1. 장착하려는 슬롯에 이미 다른 아이템이 있는지 확인
             var memberState = _currentRun.PartyState[characterIndex];
             if (memberState.equippedItemIds.TryGetValue(targetSlot, out var existingItemId))
             {
-                // 2. 만약 있다면, 그 아이템은 인벤토리로 보냄
                 _currentRun.AddItemToInventory(existingItemId);
             }
-
-            // 3. 새 아이템을 장착 (데이터 변경)
             _currentRun.EquipItem(characterIndex, targetSlot, itemToEquip.itemId);
-
-            // 4. 인벤토리에서 새 아이템 제거 (데이터 변경)
             _currentRun.RemoveItemFromInventory(itemToEquip.itemId);
-
-            // 5. RunManager가 이벤트를 호출하여 UI가 자동으로 새로고침될 것임
         }
 
         public void HandleUnequipRequest(int characterIndex, EquipSlot sourceSlot)
         {
             if (_isReadOnly || characterIndex < 0) return;
-
             var memberState = _currentRun.PartyState[characterIndex];
             if (memberState.equippedItemIds.TryGetValue(sourceSlot, out var itemIdToUnequip))
             {
-                // 1. 벗은 아이템을 인벤토리에 추가 (데이터 변경)
                 _currentRun.AddItemToInventory(itemIdToUnequip);
-
-                // 2. 해당 슬롯을 비움 (데이터 변경)
                 _currentRun.UnequipItem(characterIndex, sourceSlot);
-
-                // 3. RunManager가 이벤트를 호출하여 UI가 자동으로 새로고침될 것임
             }
         }
     }

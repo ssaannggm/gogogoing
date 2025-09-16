@@ -53,8 +53,10 @@ namespace Game.Items
         [Header("Slot")]
         public EquipSlot slot;
 
-        [Header("Stats")]
-        public StatModifier[] statMods;
+        // [핵심] 이 아이템이 올려주는 스탯
+        [Header("스탯 변경")]
+        public StatMods statMods;
+
 
         [Header("Visual Groups")]
         public VisualGroup[] visualGroups;

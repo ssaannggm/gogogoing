@@ -1,46 +1,51 @@
-// Assets/Game/Scripts/Data/UnitSO.cs (¼öÁ¤ ¿Ï·áµÈ ÀüÃ¼ ÄÚµå)
+ï»¿// Assets/Game/Scripts/Data/UnitSO.cs (ìˆ˜ì • ì™„ë£Œëœ ì „ì²´ ì½”ë“œ)
 using UnityEngine;
-using Game.Items; // ItemSO¸¦ »ç¿ëÇÏ±â À§ÇØ Ãß°¡
+using Game.Data; // StatSetì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì¶”ê°€
+using Game.Items; // ItemSOë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì¶”ê°€
 
 [CreateAssetMenu(fileName = "Unit_", menuName = "Game/Data/Unit Definition")]
 public class UnitSO : ScriptableObject
 {
-    [Header("±âº» Á¤º¸")]
+    [Header("ê¸°ë³¸ ì •ë³´")]
     public string unitId;
     public string displayName;
 
     [Header("UI")]
-    [Tooltip("ÀÎº¥Åä¸®³ª UI¿¡ Ç¥½ÃµÉ Ä³¸¯ÅÍ ÃÊ»óÈ­")]
-    public Sprite portrait; // <-- ÃÊ»óÈ­ ÇÊµå Ãß°¡
+    [Tooltip("ì¸ë²¤í† ë¦¬ë‚˜ UIì— í‘œì‹œë  ìºë¦­í„° ì´ˆìƒí™”")]
+    public Sprite portrait; // <-- ì´ˆìƒí™” í•„ë“œ ì¶”ê°€
 
-    [Header("±âº» ½ÅÃ¼ ¿ÜÇü (¾Ë¸ö)")]
+    [Header("ê¸°ë³¸ ìŠ¤íƒ¯")]
+    // [âœ¨ í•µì‹¬ ìˆ˜ì •] StatSet.Defaultë¥¼ ì‚¬ìš©í•˜ì—¬ ì´ˆê¸°ê°’ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+    public StatSet baseStats = StatSet.Default;
+
+    [Header("ê¸°ë³¸ ì‹ ì²´ ì™¸í˜• (ì•Œëª¸)")]
     public BodyParts bodyParts;
     public EyeParts eyeParts;
 
-    [Header("ÃÊ±â Àåºñ")]
-    [Tooltip("ÀÌ À¯´ÖÀÌ »ı¼ºµÉ ¶§ ±âº»À¸·Î ÀåÂøÇÒ ¾ÆÀÌÅÛµé")]
-    public DefaultEquipment defaultEquipment; // [¼öÁ¤] ÃÊ±â Àåºñ ±¸Á¶Ã¼
+    [Header("ì´ˆê¸° ì¥ë¹„")]
+    [Tooltip("ì´ ìœ ë‹›ì´ ìƒì„±ë  ë•Œ ê¸°ë³¸ìœ¼ë¡œ ì¥ì°©í•  ì•„ì´í…œë“¤")]
+    public DefaultEquipment defaultEquipment; // [ìˆ˜ì •] ì´ˆê¸° ì¥ë¹„ êµ¬ì¡°ì²´
 
     [System.Serializable]
     public struct BodyParts
     {
-        [Header("¾ó±¼/¸ö")]
+        [Header("ì–¼êµ´/ëª¸")]
         public Sprite Head, Hair, FaceHair, Body;
-        [Header("ÆÈ/´Ù¸®")]
+        [Header("íŒ”/ë‹¤ë¦¬")]
         public Sprite L_Arm, R_Arm, L_Foot, R_Foot;
-        // [»èÁ¦] Shadow ÇÊµå Á¦°Å
+        // [ì‚­ì œ] Shadow í•„ë“œ ì œê±°
     }
 
     [System.Serializable]
     public struct EyeParts
     {
-        [Tooltip("È°¼ºÈ­µÈ ´«ÀÇ µŞºÎºĞ ½ºÇÁ¶óÀÌÆ®")]
+        [Tooltip("í™œì„±í™”ëœ ëˆˆì˜ ë’·ë¶€ë¶„ ìŠ¤í”„ë¼ì´íŠ¸")]
         public Sprite back;
-        [Tooltip("È°¼ºÈ­µÈ ´«ÀÇ ¾ÕºÎºĞ(´«µ¿ÀÚ) ½ºÇÁ¶óÀÌÆ®")]
+        [Tooltip("í™œì„±í™”ëœ ëˆˆì˜ ì•ë¶€ë¶„(ëˆˆë™ì) ìŠ¤í”„ë¼ì´íŠ¸")]
         public Sprite front;
     }
 
-    // [Ãß°¡] ÃÊ±â Àåºñ¸¦ À§ÇÑ ±¸Á¶Ã¼
+    // [ì¶”ê°€] ì´ˆê¸° ì¥ë¹„ë¥¼ ìœ„í•œ êµ¬ì¡°ì²´
     [System.Serializable]
     public struct DefaultEquipment
     {

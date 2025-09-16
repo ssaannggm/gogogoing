@@ -1,8 +1,10 @@
+ï»¿// Assets/Game/Scripts/Dev/BattleSoakRunner.cs (ìµœì¢… ìˆ˜ì •ë³¸)
 using System.Collections;
-using System.Collections.Generic; // List »ç¿ëÀ» À§ÇØ Ãß°¡
 using UnityEngine;
 using Game.Battle;
 using Game.Data;
+using Game.Services; // GameManagerë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì¶”ê°€
+using Game.Runtime; // RunManagerë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì¶”ê°€
 
 public sealed class BattleSoakRunner : MonoBehaviour
 {
@@ -10,11 +12,10 @@ public sealed class BattleSoakRunner : MonoBehaviour
     [SerializeField] private BattleManager _battleManager;
 
     [Header("Test Data")]
-    [Tooltip("¹İº¹ Å×½ºÆ®ÇÒ ÀüÅõ µ¥ÀÌÅÍ")]
+    [Tooltip("ë°˜ë³µ í…ŒìŠ¤íŠ¸í•  ì „íˆ¬ ë°ì´í„°")]
     [SerializeField] private EncounterSO _testEncounter;
 
-    // [¼öÁ¤] PartyPresetSO ´ë½Å UnitSO ¹è¿­À» Á÷Á¢ »ç¿ëÇÕ´Ï´Ù.
-    [Tooltip("¹İº¹ Å×½ºÆ®ÇÒ ¾Æ±º ÆÄÆ¼ ±¸¼º")]
+    [Tooltip("ë°˜ë³µ í…ŒìŠ¤íŠ¸í•  ì•„êµ° íŒŒí‹° êµ¬ì„±")]
     [SerializeField] private UnitSO[] _testPartyUnits;
 
     [Header("Options")]
@@ -39,16 +40,9 @@ public sealed class BattleSoakRunner : MonoBehaviour
     {
         if (!_battleManager) _battleManager = FindFirstObjectByType<BattleManager>();
 
-        if (!_battleManager)
+        if (!_battleManager || !_testEncounter || _testPartyUnits == null || _testPartyUnits.Length == 0)
         {
-            Debug.LogError("[BattleSoakRunner] BattleManager°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù!");
-            enabled = false;
-            return;
-        }
-        // [¼öÁ¤] _testPartyUnits°¡ ºñ¾îÀÖ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
-        if (!_testEncounter || _testPartyUnits == null || _testPartyUnits.Length == 0)
-        {
-            Debug.LogError("[BattleSoakRunner] Test Encounter ¶Ç´Â Test Party Units°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogError("[BattleSoakRunner] í…ŒìŠ¤íŠ¸ì— í•„ìš”í•œ BattleManager, Encounter, ë˜ëŠ” Party Unitsê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
             enabled = false;
             return;
         }
@@ -64,10 +58,24 @@ public sealed class BattleSoakRunner : MonoBehaviour
 
     IEnumerator Co_Run()
     {
+        // í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ í˜„ì¬ RunManagerë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+        var runManager = GameManager.I?.CurrentRun;
+        if (runManager == null)
+        {
+            Debug.LogError("[BattleSoakRunner] í…ŒìŠ¤íŠ¸ë¥¼ ì‹¤í–‰í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤: CurrentRunì´ ì—†ìŠµë‹ˆë‹¤. ê²Œì„ì„ í•œ ë²ˆ ì‹œì‘í•œ í›„ í…ŒìŠ¤íŠ¸ ì”¬ì„ ì‹¤í–‰í•˜ì„¸ìš”.");
+            yield break;
+        }
+
         for (int i = 0; i < _iterations; i++)
         {
-            // [¼öÁ¤] _testParty.members ´ë½Å _testPartyUnits ¹è¿­À» Á÷Á¢ Àü´ŞÇÕ´Ï´Ù.
-            _battleManager.InitializeBattle(_testEncounter, _testPartyUnits);
+            // --- âœ¨ ì—¬ê¸°ê°€ í•µì‹¬ ìˆ˜ì • ë¶€ë¶„ âœ¨ ---
+            // 1. RunManagerì— í…ŒìŠ¤íŠ¸ìš© íŒŒí‹° ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+            runManager.SetPartyFromUnitSOs(_testPartyUnits);
+
+            // 2. ìƒˆë¡œìš´ ì „íˆ¬ íë¦„ì— ë§ì¶° í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
+            _battleManager.PrepareBattle(_testEncounter);
+            _battleManager.StartBattle();
+            // --- âœ¨ ìˆ˜ì • ë âœ¨ ---
 
             while (_battleManager.State != BattleState.None)
             {
@@ -77,7 +85,7 @@ public sealed class BattleSoakRunner : MonoBehaviour
 
             var m = BattleManager.LastMetrics;
             Debug.Log($"[Soak] #{i + 1}/{_iterations} done: {(m.victory ? "V" : "D")} reason={m.endReason} " +
-                      $"t={m.elapsedSeconds:0.000}s mem¥Ä={m.managedMemDelta / 1024f:0.0}KB");
+                      $"t={m.elapsedSeconds:0.000}s memÎ”={m.managedMemDelta / 1024f:0.0}KB");
 
             yield return new WaitForSeconds(_delayBetween);
         }

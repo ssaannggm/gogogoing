@@ -102,23 +102,23 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
                     // 유효한 타격이므로, 계산된 HitInfo를 그대로 Health 컴포넌트에 전달합니다.
                     targetHealth.TakeDamage(hit);
                     // --- 모든 피해 흡혈 로직 ---
-                    if (ownerStats.omnivamp > 0)
+                    if (ownerStats.CurrentStats.omnivamp > 0)
                     {
                         var ownerHealth = ownerStats.GetComponent<Health>();
                         if (ownerHealth != null)
                         {
-                            float healAmount = hit.amount * (ownerStats.omnivamp / 100f);
+                            float healAmount = hit.amount * (ownerStats.CurrentStats.omnivamp / 100f);
                             ownerHealth.Heal(healAmount);
                         }
                     }
                     // --- 처치 시 생명력 회복 로직 ---
-                    if (targetHealth.IsDead && ownerStats.lifeOnKill > 0)
+                    if (targetHealth.IsDead && ownerStats.CurrentStats.lifeOnKill > 0)
                     {
                         var ownerHealth = ownerStats.GetComponent<Health>();
                         if (ownerHealth != null)
                         {
-                            ownerHealth.Heal(ownerStats.lifeOnKill);
-                            Debug.Log($"{ownerStats.name}이(가) 적을 처치하고 체력을 {ownerStats.lifeOnKill} 회복했습니다.");
+                            ownerHealth.Heal(ownerStats.CurrentStats.lifeOnKill);
+                            Debug.Log($"{ownerStats.name}이(가) 적을 처치하고 체력을 {ownerStats.CurrentStats.lifeOnKill} 회복했습니다.");
                         }
                     }
                     break;

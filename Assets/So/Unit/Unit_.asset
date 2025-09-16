@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a07b320f4adcba41b006903a701194a, type: 3}
+  m_Name: Unit_
+  m_EditorClassIdentifier: 
+  unitId: 
+  displayName: 
+  portrait: {fileID: 0}
+  baseStats:
+    maxHp: 200
+    healthRegen: 0
+    lifeOnKill: 0
+    omnivamp: 0
+    attackPower: 10
+    attackSpeed: 1
+    attackRange: 1.2
+    critChance: 0
+    critDamage: 150
+    damageIncrease: 0
+    defense: 0
+    magicResist: 0
+    evasionChance: 0
+    blockChance: 0
+    blockPower: 30
+    damageReduction: 0
+    moveSpeed: 1
+    abilityHaste: 0
+    tenacity: 0
+  bodyParts:
+    Head: {fileID: 0}
+    Hair: {fileID: 0}
+    FaceHair: {fileID: 0}
+    Body: {fileID: 0}
+    L_Arm: {fileID: 0}
+    R_Arm: {fileID: 0}
+    L_Foot: {fileID: 0}
+    R_Foot: {fileID: 0}
+  eyeParts:
+    back: {fileID: 0}
+    front: {fileID: 0}
+  defaultEquipment:
+    rightHand: {fileID: 0}
+    leftHand: {fileID: 0}
+    helmet: {fileID: 0}
+    armor: {fileID: 0}

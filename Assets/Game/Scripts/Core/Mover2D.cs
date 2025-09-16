@@ -8,7 +8,7 @@ public class Mover2D : MonoBehaviour
     public void MoveTowards(Vector2 targetPos)
     {
         var dir = (targetPos - rb.position).normalized;
-        rb.MovePosition(rb.position + dir * (st.moveSpeed * Time.deltaTime));
+        rb.MovePosition(rb.position + dir * (st.CurrentStats.moveSpeed * Time.deltaTime));
     }
     public void Stop() { rb.linearVelocity = Vector2.zero; }
 }
