@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using Game.Items;
 using Game.Runtime;
 
-public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, IEndDragHandler
 {
     [Header("슬롯 정보")]
     public EquipSlot slotType;
@@ -23,8 +23,7 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
     {
         if (_iconCanvasGroup == null && iconImage != null)
         {
-            _iconCanvasGroup = iconImage.GetComponent<CanvasGroup>();
-            if (_iconCanvasGroup == null) _iconCanvasGroup = iconImage.gameObject.AddComponent<CanvasGroup>();
+            _iconCanvasGroup = iconImage.GetComponent<CanvasGroup>() ?? iconImage.gameObject.AddComponent<CanvasGroup>();
         }
     }
 
@@ -36,14 +35,8 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
         _isDraggable = isDraggable;
 
         bool hasItem = item != null;
-        if (iconImage)
-        {
-            iconImage.sprite = hasItem ? item.icon : null;
-        }
-        if (_iconCanvasGroup)
-        {
-            _iconCanvasGroup.alpha = hasItem ? 1f : 0f;
-        }
+        if (iconImage) iconImage.sprite = hasItem ? item.icon : null;
+        if (_iconCanvasGroup) _iconCanvasGroup.alpha = hasItem ? 1f : 0f;
     }
 
     public void OnDrop(PointerEventData eventData)
@@ -51,6 +44,7 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
         var itemIcon = eventData.pointerDrag.GetComponent<ItemIconUI>();
         if (itemIcon == null || itemIcon.ItemData == null) return;
 
+        // 슬롯 타입이 맞는지 확인하고 컨트롤러에 장착 요청
         if (itemIcon.ItemData.slot == this.slotType)
         {
             _controller?.HandleEquipRequest(itemIcon.ItemData, this.CharacterIndex, this.slotType);
@@ -61,27 +55,32 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
     {
         if (_currentItem == null || !_isDraggable) return;
 
+        // 1. 유령 아이콘 생성
         var iconGO = Instantiate(_controller.GetItemIconPrefab(), _controller.dragParent);
         var ghostIcon = iconGO.GetComponent<ItemIconUI>();
         ghostIcon.SetupAsGhost(_currentItem, _controller, this);
         eventData.pointerDrag = iconGO;
 
-        // 드래그하는 동안 원래 아이콘은 반투명하게 만듭니다.
-        if (_iconCanvasGroup) _iconCanvasGroup.alpha = 0.5f;
+        // 2. 원래 아이콘은 "집었다"는 표시로 완전히 투명하게 만듭니다.
+        if (_iconCanvasGroup) _iconCanvasGroup.alpha = 0f;
     }
 
     public void OnDrag(PointerEventData eventData) { }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        // [✨✨✨ 핵심 수정 ✨✨✨]
-        // 드래그가 끝났을 때, 일단 원래 아이콘의 투명도를 100%로 되돌립니다.
-        // - 드롭에 성공했다면: 잠시 뒤 RunManager 이벤트가 이 슬롯을 비우고 투명도를 0으로 다시 설정할 것입니다.
-        // - 드롭에 실패했다면: 이 코드가 실행되어 아이템이 원래 모습으로 돌아옵니다.
-        if (_iconCanvasGroup) _iconCanvasGroup.alpha = 1f;
+        // 드래그가 끝났을 때 이 슬롯이 직접 자신의 모습을 바꾸지 않습니다.
+        // 모든 시각적 복원은 RunManager의 데이터 변경 이벤트가 발생시킨
+        // RefreshAllUI -> Setup() 호출을 통해 이루어집니다.
+        // 만약 드롭이 실패하여 데이터 변경이 없다면, 이벤트도 없으므로
+        // 이 슬롯의 모습은 바뀌지 않고 계속 투명한 상태로 남아있게 됩니다.
+        // 이를 해결하기 위해, 드롭이 실패했을 가능성을 대비하여 컨트롤러에 "새로고침"을 요청합니다.
 
-        // 이제 "빨리 드롭해야 하는 문제"가 해결되었는지 확인해보세요.
-        // 만약 여전히 문제가 발생한다면, 이 아래 로그가 찍히는지 확인이 필요합니다.
-        // Debug.Log($"OnEndDrag from {gameObject.name}. Drop Target: {(eventData.pointerEnter != null ? eventData.pointerEnter.name : "None")}");
+        // 유령 아이콘은 스스로 파괴됩니다.
+        // 만약 드롭이 유효한 대상 위에서 끝나지 않았다면(허공), UI를 강제로 한번 새로고침합니다.
+        if (eventData.pointerEnter == null)
+        {
+            _controller.ForceRefreshUI();
+        }
     }
 }
