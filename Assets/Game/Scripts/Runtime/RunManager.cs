@@ -1,6 +1,7 @@
-﻿using System;
+﻿// RunManager.cs - 전체 코드
+using System;
 using System.Collections.Generic;
-using System.Linq; // Linq 사용을 위해 추가
+using System.Linq;
 using UnityEngine;
 using Game.Services;
 using Game.Data;
@@ -10,6 +11,10 @@ namespace Game.Runtime
 {
     public sealed class RunManager
     {
+        // [추가] 데이터 변경을 UI에 알리기 위한 C# 이벤트
+        // static으로 선언하여 어디서든 구독할 수 있게 합니다.
+        public static event Action OnRunDataChanged;
+
         public int Seed { get; private set; }
         public int Floor { get; private set; } = 0;
         public string CurrentNodeId { get; private set; }
@@ -17,11 +22,9 @@ namespace Game.Runtime
         private readonly DataCatalog _data;
         private System.Random _rng;
 
-        // [추가] 이번 런에서 획득한 아이템 ID 목록
         private readonly List<string> _inventoryItemIds = new List<string>();
         public IReadOnlyList<string> InventoryItemIds => _inventoryItemIds;
 
-        // [수정] string 리스트 대신 PartyMemberState 리스트를 사용 , 참고: Snapshot 저장/로드 로직에도 나중에 이 _inventoryItemIds를 포함시켜야 합니다.
         private readonly List<PartyMemberState> _partyState = new List<PartyMemberState>();
         public IReadOnlyList<PartyMemberState> PartyState => _partyState;
 
@@ -73,21 +76,48 @@ namespace Game.Runtime
                     _partyState.Add(newMember);
                 }
             }
+            // [추가] 파티 데이터가 변경되었으므로 이벤트 호출
+            OnRunDataChanged?.Invoke();
         }
 
-        public void EquipItem(int partyMemberIndex, ItemSO item)
+        // [수정] ItemSO 대신 itemId를 받도록 수정
+        public void EquipItem(int partyMemberIndex, EquipSlot slot, string itemId)
         {
-            if (partyMemberIndex < 0 || partyMemberIndex >= _partyState.Count || item == null) return;
-            _partyState[partyMemberIndex].equippedItemIds[item.slot] = item.itemId;
+            if (partyMemberIndex < 0 || partyMemberIndex >= _partyState.Count || string.IsNullOrEmpty(itemId)) return;
+            _partyState[partyMemberIndex].equippedItemIds[slot] = itemId;
+
+            // [추가] 데이터 변경 이벤트 호출
+            OnRunDataChanged?.Invoke();
         }
 
         public void UnequipItem(int partyMemberIndex, EquipSlot slot)
         {
             if (partyMemberIndex < 0 || partyMemberIndex >= _partyState.Count) return;
             _partyState[partyMemberIndex].equippedItemIds.Remove(slot);
+
+            // [추가] 데이터 변경 이벤트 호출
+            OnRunDataChanged?.Invoke();
         }
 
-        // [수정] _partyState를 기반으로 UnitSO 목록을 반환하도록 수정
+        public void AddItemToInventory(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return;
+            _inventoryItemIds.Add(itemId);
+            Debug.Log($"{itemId} 을(를) 인벤토리에 추가했습니다.");
+
+            // [추가] 데이터 변경 이벤트 호출
+            OnRunDataChanged?.Invoke();
+        }
+
+        public void RemoveItemFromInventory(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return;
+            _inventoryItemIds.Remove(itemId);
+
+            // [추가] 데이터 변경 이벤트 호출
+            OnRunDataChanged?.Invoke();
+        }
+
         public IReadOnlyList<UnitSO> GetPartyAsUnitSOs()
         {
             var unitSOs = new List<UnitSO>();
@@ -104,19 +134,17 @@ namespace Game.Runtime
             return unitSOs;
         }
 
-        // --- DataCatalog 위임 ---
         public EncounterSO GetEncounterById(string id) => _data ? _data.GetEncounterById(id) : null;
         public MapNodeSO GetNodeById(string id) => _data ? _data.GetNodeById(id) : null;
 
-        // --- 스냅샷 ---
         [Serializable]
         public struct Snapshot
         {
             public int seed;
             public int floor;
             public string currentNodeId;
-            // [수정] string 목록 대신 PartyMemberState 목록을 저장
             public List<PartyMemberState> partyState;
+            public List<string> inventoryItemIds; // [추가] 인벤토리도 저장
         }
 
         public Snapshot ToSnapshot() => new Snapshot
@@ -124,8 +152,8 @@ namespace Game.Runtime
             seed = Seed,
             floor = Floor,
             currentNodeId = CurrentNodeId,
-            // [수정] _partyState를 그대로 저장
-            partyState = new List<PartyMemberState>(_partyState)
+            partyState = new List<PartyMemberState>(_partyState),
+            inventoryItemIds = new List<string>(_inventoryItemIds) // [추가]
         };
 
         public static RunManager FromSnapshot(Snapshot s, DataCatalog data)
@@ -135,25 +163,15 @@ namespace Game.Runtime
                 Floor = Math.Max(0, s.floor),
                 CurrentNodeId = s.currentNodeId
             };
-            // [수정] Snapshot의 partyState를 복원
             if (s.partyState != null)
             {
                 rm._partyState.AddRange(s.partyState);
             }
+            if (s.inventoryItemIds != null)
+            {
+                rm._inventoryItemIds.AddRange(s.inventoryItemIds); // [추가]
+            }
             return rm;
-        }
-        // [추가] 인벤토리에 아이템을 추가/제거하는 함수
-        public void AddItemToInventory(ItemSO item)
-        {
-            if (item == null) return;
-            _inventoryItemIds.Add(item.itemId);
-            Debug.Log($"{item.displayName}을(를) 인벤토리에 추가했습니다.");
-        }
-
-        public void RemoveItemFromInventory(ItemSO item)
-        {
-            if (item == null) return;
-            _inventoryItemIds.Remove(item.itemId);
         }
     }
 }

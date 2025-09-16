@@ -1,3 +1,4 @@
+// InventoryListPanel.cs - 전체 코드
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Game.Services;
@@ -11,62 +12,46 @@ namespace Game.UI
     {
         [Header("UI 설정")]
         [SerializeField] private Transform _contentParent;
-        [SerializeField] private GameObject _itemIconPrefab;
 
-        // [추가] 생성된 아이콘들을 관리하기 위한 리스트
-        private List<ItemIconUI> _spawnedIcons = new List<ItemIconUI>();
-        private InventoryPartyMode _controller;
+        private List<GameObject> _spawnedIcons = new List<GameObject>();
 
-        public void Refresh(InventoryPartyMode controller)
+        public void Refresh(InventoryPartyMode controller, IReadOnlyList<string> itemIds, bool isDraggable)
         {
-            _controller = controller;
-
-            // 기존 아이콘들을 모두 삭제
             foreach (var icon in _spawnedIcons)
             {
-                if (icon) Destroy(icon.gameObject);
+                if (icon) Destroy(icon);
             }
             _spawnedIcons.Clear();
 
-            var run = GameManager.I?.CurrentRun;
             var dataCatalog = GameManager.I?.Data;
-            if (run == null || dataCatalog == null || _itemIconPrefab == null) return;
+            var itemIconPrefab = controller.GetItemIconPrefab();
+            if (dataCatalog == null || itemIconPrefab == null) return;
 
-            IReadOnlyList<string> itemIds = run.InventoryItemIds;
             foreach (var itemId in itemIds)
             {
                 var itemSO = dataCatalog.GetItemById(itemId);
                 if (itemSO != null)
                 {
-                    var iconGO = Instantiate(_itemIconPrefab, _contentParent);
+                    var iconGO = Instantiate(itemIconPrefab, _contentParent);
                     var itemIcon = iconGO.GetComponent<ItemIconUI>();
-                    itemIcon.Setup(itemSO, controller);
-                    _spawnedIcons.Add(itemIcon);
-                }
-            }
-        }
-
-        /// <summary>
-        /// [추가] 인벤토리의 모든 아이콘들의 드래그 가능 여부를 설정합니다.
-        /// </summary>
-        public void SetDraggable(bool isDraggable)
-        {
-            foreach (var iconUI in _spawnedIcons)
-            {
-                if (iconUI != null)
-                {
-                    // ItemIconUI 스크립트 자체를 켜거나 꺼서 드래그 기능을 제어합니다.
-                    iconUI.enabled = isDraggable;
+                    itemIcon.Setup(itemSO, controller, isDraggable);
+                    _spawnedIcons.Add(iconGO);
                 }
             }
         }
 
         public void OnDrop(PointerEventData eventData)
         {
-            var itemIcon = eventData.pointerDrag.GetComponent<ItemIconUI>();
-            if (itemIcon != null)
+            var droppedIcon = eventData.pointerDrag.GetComponent<ItemIconUI>();
+            if (droppedIcon == null) return;
+
+            // [핵심] 드롭된 아이콘이 장비 슬롯에서 온 '유령'일 경우에만 장비 해제 처리
+            if (droppedIcon.IsGhost && droppedIcon.SourceSlot != null)
             {
-                _controller?.OnUnequipRequest(itemIcon.ItemData);
+                var sourceSlot = droppedIcon.SourceSlot;
+                var controller = sourceSlot.GetComponentInParent<InventoryPartyMode>(); // 컨트롤러 찾기
+
+                controller?.HandleUnequipRequest(sourceSlot.CharacterIndex, sourceSlot.slotType);
             }
         }
     }
