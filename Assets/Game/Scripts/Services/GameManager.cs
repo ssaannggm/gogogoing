@@ -100,35 +100,26 @@ namespace Game.Services
         }
 
         // 'I' 키를 눌렀을 때 호출될 함수
+        // GameManager.cs - ToggleInventory (교체: 핵심 2줄)
         private void ToggleInventory(InputAction.CallbackContext context)
         {
             if (State != GameState.Run || _flowController == null || _inventoryUI == null) return;
-
-            // 영입 중에는 인벤토리 비활성화
             if (_flowController.Phase == RunPhase.Recruitment) return;
 
-            // --- ✨ 여기가 핵심 수정 부분 ✨ ---
             if (_inventoryUI.gameObject.activeInHierarchy)
             {
-                // 현재 전투 페이즈(준비 중 포함)인지 확인
-                if (_flowController.Phase == RunPhase.Battle)
-                {
-                    // 전투 중일 때는 맵으로 가지 않고, UI만 닫습니다.
-                    _inventoryUI.ExitMode();
-                }
-                else
-                {
-                    // 맵이나 이벤트 화면일 때는 맵으로 돌아갑니다.
-                    _flowController.RequestMap();
-                }
+                _inventoryUI.ExitMode();
             }
-            // --- 수정 끝 ---
-            else // 인벤토리가 닫혀있을 때
+            else
             {
-                bool isReadOnly = (_flowController.Phase == RunPhase.Battle);
+                // 맵인 경우엔 무조건 편집 가능, 배틀 중에만 읽기전용
+                bool isOnMap = (_flowController.Phase == RunPhase.MapSelect || _flowController.Phase == RunPhase.Event);
+                bool isReadOnly = !isOnMap; // 맵/이벤트=false, 그 외(배틀)=true
                 _inventoryUI.Open(isReadOnly);
             }
         }
+
+
         // --- ✨ 여기가 핵심! 체크인(등록) 함수 추가 ---
         public void RegisterFlowController(GameFlowController fc)
         {
