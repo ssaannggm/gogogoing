@@ -4229,7 +4229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6974,6 +6974,7 @@ MonoBehaviour:
   _characterPortrait: {fileID: 1399099089}
   _confirmButton: {fileID: 1442713040}
   _itemIconPrefab: {fileID: 484132991512786111, guid: efe3d2e00c636314b8432eafcc544071, type: 3}
+  _root: {fileID: 1987993746}
   dragParent: {fileID: 1425871767}
 --- !u!1 &2030192353
 GameObject:

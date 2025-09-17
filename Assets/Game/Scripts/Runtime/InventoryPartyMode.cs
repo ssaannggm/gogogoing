@@ -23,11 +23,17 @@ namespace Game.Runtime
         [SerializeField] private Button _confirmButton;
         [Header("프리팹")]
         [SerializeField] private GameObject _itemIconPrefab;
+        [Header("Root (선택)")]
+        [SerializeField] private GameObject _root;  // InventoryCanvas 등 실제 표시 루트
         [Header("드래그앤드롭 설정")]
         public Transform dragParent;
         private RunManager _currentRun;
         private int _selectedMemberIndex = -1;
-        private bool _isReadOnly = false;
+        private bool _isReadOnly = false;  // ← 이 줄 추가
+        private bool _readOnlyLock = false;         // 배틀 페이즈에서 강제 읽기전용
+        public bool IsReadOnly => _isReadOnly;
+        public bool Visible => _root ? _root.activeSelf : gameObject.activeSelf;
+
 
         public void Setup(GameFlowController flow) => _flow = flow;
         public GameObject GetItemIconPrefab() => _itemIconPrefab;
@@ -45,33 +51,41 @@ namespace Game.Runtime
         }
         private void OnEnable() => RunManager.OnRunDataChanged += RefreshAllUI;
         private void OnDisable() => RunManager.OnRunDataChanged -= RefreshAllUI;
-
+        public void ForceRefreshUI() => RefreshAllUI();
         /// <summary>
         /// [핵심 추가] 드롭 실패 시 UI 상태를 강제로 동기화하기 위한 함수
         /// </summary>
-        public void ForceRefreshUI()
-        {
-            RefreshAllUI();
-        }
+        //public void ForceRefreshUI()
+        //{
+        //    RefreshAllUI();
+        //}
 
         // --- 나머지 모든 함수들은 기존과 완벽하게 동일합니다. ---
         public void EnterMode() => Open(false);
         public void Open(bool isReadOnly)
         {
-            _isReadOnly = isReadOnly;
-            gameObject.SetActive(true);
+            // 페이즈 락이 우선
+            _isReadOnly = _readOnlyLock || isReadOnly;
+
+            if (_root) _root.SetActive(true);
+            else gameObject.SetActive(true);
+
             _currentRun = GameManager.I?.CurrentRun;
             if (_currentRun == null)
             {
-                Debug.LogError("RunManager가 존재하지 않아 파티 UI를 열 수 없습니다.");
-                gameObject.SetActive(false);
+                if (_root) _root.SetActive(false);
+                else gameObject.SetActive(false);
                 return;
             }
-            var invCanvas = GetComponentInChildren<Canvas>(true);
-            if (invCanvas) { invCanvas.overrideSorting = true; invCanvas.sortingOrder = 500; } // HUD 위로
-            ForceRefreshUI(); // 열릴 때 항상 새로고침
+            RefreshAllUI();
+            Debug.Log($"[InventoryPartyMode] Open(readOnly={_isReadOnly}, lock={_readOnlyLock})");
         }
-        public void ExitMode() => gameObject.SetActive(false);
+        public void ExitMode()
+        {
+            if (_root) _root.SetActive(false);
+            else gameObject.SetActive(false);
+            Debug.Log("[InventoryPartyMode] ExitMode()");
+        }
         private void OnConfirmClicked()
         {
             var battleManager = Battle.BattleManager.Instance;
@@ -227,6 +241,14 @@ namespace Game.Runtime
             DragContext.Clear();
             RefreshAllUI();
         }
-
+        public void SetReadOnlyLock(bool locked)
+        {
+            _readOnlyLock = locked;
+            if (Visible)
+            {
+                // 현재 열린 상태면 즉시 반영
+                Open(_isReadOnly);
+            }
+        }
     }
 }

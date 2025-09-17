@@ -8,25 +8,25 @@ using Game.UI;
 
 public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [Header("슬롯 정보")]
-    public EquipSlot slotType;
+    [Header("슬롯 정보")] public EquipSlot slotType;
     public int CharacterIndex;
 
     [Header("UI 참조")]
-    [SerializeField] private Image iconImage;      // 드롭 수신 Graphic
+    [SerializeField] private Image iconImage;
     [SerializeField] private CanvasGroup iconCg;
 
     [Header("고스트 프리팹(선택)")]
     [SerializeField] private GameObject _ghostPrefab;
 
     private InventoryPartyMode _controller;
-    private ItemSO _currentItem;                   // ★ SO로 보관
+    private ItemSO _currentItem;
     private RectTransform _ghost;
+    private bool _isDraggable; // ★ 실제 사용
 
     void OnDisable()
     {
         if (_ghost) { Destroy(_ghost.gameObject); _ghost = null; }
-        if (iconImage) iconImage.raycastTarget = true; // 항상 드롭 받게
+        if (iconImage) iconImage.raycastTarget = true;
         if (DragContext.IsActive &&
             DragContext.Current.source == DragSourceType.Slot &&
             DragContext.Current.memberIndex == CharacterIndex &&
@@ -39,21 +39,22 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
         CharacterIndex = characterIndex;
         _controller = controller;
         _currentItem = item;
+        _isDraggable = isDraggable; // ★ 저장
 
         bool has = item != null;
         if (iconImage)
         {
             iconImage.sprite = has ? item.icon : null;
-            iconImage.raycastTarget = true; // 아이템 유무와 무관하게 항상 켬
+            iconImage.raycastTarget = true; // 빈 슬롯이어도 드롭 수신 가능
         }
         if (iconCg) iconCg.alpha = has ? 1f : 0f;
     }
 
     public void OnBeginDrag(PointerEventData e)
     {
-        if (_currentItem == null || _controller == null) return;
+        if (_controller == null || _controller.IsReadOnly) return; // ★ 읽기전용 차단
+        if (!_isDraggable || _currentItem == null) return;         // ★ 드래그 게이트
 
-        // ★ SO 기반 페이로드
         DragContext.StartFromSlot(CharacterIndex, slotType, _currentItem);
 
         var prefab = _ghostPrefab ? _ghostPrefab : _controller.GetItemIconPrefab();
@@ -83,7 +84,7 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
     {
         if (_ghost) { Destroy(_ghost.gameObject); _ghost = null; }
 
-        // 처리 안 됨 → 원복
+        // 실패 시 복구
         if (DragContext.IsActive)
         {
             if (iconCg) iconCg.alpha = (_currentItem != null) ? 1f : 0f;
@@ -98,11 +99,11 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
 
     public void OnDrop(PointerEventData e)
     {
-        if (_controller == null || !DragContext.IsActive) return;
+        if (_controller == null || _controller.IsReadOnly) return; // ★ 읽기전용 차단
+        if (!DragContext.IsActive) return;
 
-        // ★ 슬롯 검증: 다른 타입이면 장착 불가
         var payload = DragContext.Current;
-        if (payload.item == null || payload.item.slot != slotType) return;
+        if (payload.item == null || payload.item.slot != slotType) return; // 슬롯 타입 검증
 
         _controller.ApplyDropToSlotSO(CharacterIndex, slotType);
     }

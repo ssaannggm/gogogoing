@@ -522,7 +522,6 @@ MonoBehaviour:
   - {fileID: 1231868343}
   endCheckDelay: 0.05
   timeLimitSeconds: 0
-  spawnOffset: {x: 0, y: 0, z: 0}
 --- !u!4 &1214594497
 Transform:
   m_ObjectHideFlags: 0
@@ -585,6 +584,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1040775693}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1446115511
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1446115512}
+  - component: {fileID: 1446115513}
+  m_Layer: 0
+  m_Name: BattleInventoryToggle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1446115512
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446115511}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1446115513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446115511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0815c86eab48bae40b08038a125bb183, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toggleInventory: {fileID: -8105709721961806615, guid: 44b72195ab7791a4e9ef5572fba812c3, type: 3}
+  inventorySortingOrder: 500
 --- !u!1 &1454417278
 GameObject:
   m_ObjectHideFlags: 0
@@ -17439,4 +17484,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 1214594497}
   - {fileID: 1915656565}
+  - {fileID: 1446115512}
   - {fileID: 915938284}

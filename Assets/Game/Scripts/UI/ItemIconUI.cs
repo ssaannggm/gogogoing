@@ -55,6 +55,7 @@ public class ItemIconUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public void OnBeginDrag(PointerEventData e)
     {
         if (!_isDraggable || ItemData == null || Controller == null || _img.sprite == null) return;
+        if (Controller.IsReadOnly) return; // ★ 읽기전용 차단
 
         // ★ SO 기반 페이로드
         DragContext.StartFromInventory(ItemData);

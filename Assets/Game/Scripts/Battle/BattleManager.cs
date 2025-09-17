@@ -1,4 +1,4 @@
-// Assets/Game/Scripts/Battle/BattleManager.cs (전체 코드)
+// Assets/Game/Scripts/Battle/BattleManager.cs (수정본 전체)
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -47,24 +47,29 @@ namespace Game.Battle
         private long _memBefore, _memAfter;
         private Coroutine _timeLimitCo;
         private System.Action<RunEnded> _runEndedHandler;
+
         public static BattleManager Instance { get; private set; }
+
+        // ★ 추가: 인벤토리 토글 게이트 캐싱
+        private BattleInventoryToggle _invToggle;
 
         void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            if (Instance == null) Instance = this;
+            else { Destroy(gameObject); return; }
+
+            // 배틀 씬에서 한 번 캐싱
+            _invToggle = FindObjectOfType<BattleInventoryToggle>(true);
+            if (_invToggle == null)
+                Debug.LogWarning("[BattleManager] BattleInventoryToggle을 씬에서 찾지 못했습니다. I 토글 연동이 비활성화됩니다.");
         }
+
         void OnEnable()
         {
             _runEndedHandler = _ => AbortBattle();
             EventBus.Subscribe(_runEndedHandler);
         }
+
         void OnDisable()
         {
             if (_runEndedHandler != null) EventBus.Unsubscribe(_runEndedHandler);
@@ -82,6 +87,9 @@ namespace Game.Battle
             State = BattleState.Spawning;
             ClearRegistry();
 
+            // ★ 페이즈: 세팅 가능 모드
+            _invToggle?.SetPhase(BattlePhase.Setup);
+
             StartCoroutine(SpawnEnemies(encounter.enemyUnits, _enemySpawnPoints));
             Debug.Log("[BattleManager] 전투 준비 완료. 적군 스폰됨. 아군 배치를 기다립니다.");
         }
@@ -89,6 +97,7 @@ namespace Game.Battle
         public void StartBattle()
         {
             if (State != BattleState.Spawning) return;
+
             StartCoroutine(SpawnAllies(_allySpawnPoints));
             StartCoroutine(Co_StartFightingPhase());
         }
@@ -208,6 +217,10 @@ namespace Game.Battle
         {
             yield return new WaitForSeconds(0.1f);
             State = BattleState.Fighting;
+
+            // ★ 페이즈: 전투 진행(읽기전용)
+            _invToggle?.SetPhase(BattlePhase.Running);
+
             Debug.Log("[BattleManager] 전투 시작! Fighting Phase 돌입.");
             if (timeLimitSeconds > 0f)
                 _timeLimitCo = StartCoroutine(Co_TimeLimit(timeLimitSeconds));
@@ -218,6 +231,10 @@ namespace Game.Battle
             if (State == BattleState.Ending) return;
             StopAllCoroutines();
             _timeLimitCo = null;
+
+            // ★ 페이즈: 결과 단계로 전환
+            _invToggle?.SetPhase(BattlePhase.Results);
+
             StartCoroutine(Co_EndBattle(victory: false, reason: "Aborted"));
         }
 
@@ -255,6 +272,10 @@ namespace Game.Battle
         {
             if (State == BattleState.Ending) yield break;
             State = BattleState.Ending;
+
+            // ★ 페이즈: 결과 단계로 전환
+            _invToggle?.SetPhase(BattlePhase.Results);
+
             if (_timeLimitCo != null) { StopCoroutine(_timeLimitCo); _timeLimitCo = null; }
             FreezeUnits(_aliveAllies);
             FreezeUnits(_aliveEnemies);
