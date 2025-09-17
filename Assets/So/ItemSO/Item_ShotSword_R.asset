@@ -47,7 +47,7 @@ MonoBehaviour:
   groupsToHide: []
   animationOverrides:
   - state: 2
-    clip: {fileID: 7400000, guid: b52ec211d38a5444fbf4320ddcb84e3e, type: 2}
+    clip: {fileID: 7400000, guid: 3b507c912fa351848bdbf6630519673c, type: 2}
   attackEffect:
     vfxPrefab: {fileID: 124808, guid: 2d051abfebeda054eac2b6a15edf6d4e, type: 3}
     vfxLifetime: 1

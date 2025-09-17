@@ -1,25 +1,42 @@
-﻿// Assets/Game/Scripts/UI/ItemIconUI.cs (최종 수정본)
+﻿// Assets/Game/Scripts/UI/ItemIconUI.cs
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Game.Items;
 using Game.Runtime;
+using Game.UI;
 
-[RequireComponent(typeof(CanvasGroup))]
+[RequireComponent(typeof(CanvasGroup), typeof(Image))]
 public class ItemIconUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public ItemSO ItemData { get; private set; }
     public InventoryPartyMode Controller { get; private set; }
-    public bool IsGhost { get; private set; } = false;
-    public EquipmentSlotUI SourceSlot { get; private set; }
 
-    private Transform _originalParent;
-    private CanvasGroup _canvasGroup;
-    private bool _isDraggable = true;
+    [SerializeField] private GameObject _ghostPrefab;   // None이면 Controller.GetItemIconPrefab 사용
+    private RectTransform _ghost;
+    private CanvasGroup _cg;
+    private Image _img;
+    private bool _isDraggable;
 
     void Awake()
     {
-        _canvasGroup = GetComponent<CanvasGroup>();
+        _cg = GetComponent<CanvasGroup>();
+        _img = GetComponent<Image>();
+    }
+
+    void OnDisable()
+    {
+        if (_ghost) { Destroy(_ghost.gameObject); _ghost = null; }
+        if (_img)
+        {
+            bool on = (_img.sprite != null);
+            _img.enabled = on;
+            _img.raycastTarget = on;
+        }
+        if (_cg) _cg.blocksRaycasts = true;
+
+        if (DragContext.IsActive && DragContext.Current.source == DragSourceType.Inventory && ItemData != null)
+            DragContext.Clear();
     }
 
     public void Setup(ItemSO item, InventoryPartyMode controller, bool isDraggable)
@@ -27,60 +44,80 @@ public class ItemIconUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         ItemData = item;
         Controller = controller;
         _isDraggable = isDraggable;
-        GetComponent<Image>().sprite = item.icon;
-        IsGhost = false;
-        SourceSlot = null;
+
+        _img.sprite = item ? item.icon : null;
+        bool on = _img.sprite != null;
+        _img.enabled = on;
+        _img.raycastTarget = on;
+        _cg.blocksRaycasts = true;
     }
 
-    public void SetupAsGhost(ItemSO item, InventoryPartyMode controller, EquipmentSlotUI sourceSlot)
+    public void OnBeginDrag(PointerEventData e)
     {
-        Setup(item, controller, true);
-        IsGhost = true;
-        SourceSlot = sourceSlot;
+        if (!_isDraggable || ItemData == null || Controller == null || _img.sprite == null) return;
+
+        // ★ SO 기반 페이로드
+        DragContext.StartFromInventory(ItemData);
+
+        // 고스트 생성 (필요 시)
+        var prefab = _ghostPrefab ? _ghostPrefab : Controller.GetItemIconPrefab();
+        if (prefab)
+        {
+            var go = Instantiate(prefab, Controller.dragParent);
+            _ghost = go.transform as RectTransform;
+
+            var gCg = go.GetComponentInChildren<CanvasGroup>() ?? go.AddComponent<CanvasGroup>();
+            gCg.blocksRaycasts = false;
+            gCg.alpha = 1f;
+
+            var ghostImg = go.GetComponentInChildren<Image>(true);
+            if (ghostImg)
+            {
+                ghostImg.sprite = _img.sprite;
+                ghostImg.enabled = true;
+                var c = ghostImg.color; c.a = 1f; ghostImg.color = c;
+                ghostImg.raycastTarget = false;
+                ghostImg.maskable = false;
+            }
+
+            _ghost.SetAsLastSibling();
+            _ghost.localScale = Vector3.one;
+            _ghost.position = e.position;
+
+            var ghostCanvas = go.GetComponent<Canvas>();
+            if (ghostCanvas) { ghostCanvas.overrideSorting = true; ghostCanvas.sortingOrder = 999; }
+        }
+
+        // 원본 비활성화(시각/입력)
+        _img.enabled = false;
+        _img.raycastTarget = false;
+        _cg.blocksRaycasts = false;
     }
 
-    public void OnBeginDrag(PointerEventData eventData)
+    public void OnDrag(PointerEventData e)
     {
-        if (!_isDraggable || Controller == null)
-        {
-            eventData.pointerDrag = null;
-            return;
-        }
-
-        // [핵심] 드래그되는 동안 '유령'은 이벤트를 완벽하게 통과시켜야 합니다.
-        _canvasGroup.blocksRaycasts = false;
-
-        if (!IsGhost)
-        {
-            // 실제 인벤토리 아이콘일 경우, 드래그를 위해 최상위로 잠시 이동
-            _originalParent = transform.parent;
-            transform.SetParent(Controller.dragParent);
-        }
+        if (_ghost) _ghost.position = e.position;
     }
 
-    public void OnDrag(PointerEventData eventData)
+    public void OnEndDrag(PointerEventData e)
     {
-        if (!_isDraggable) return;
-        transform.position = eventData.position;
-    }
+        if (_ghost) { Destroy(_ghost.gameObject); _ghost = null; }
 
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        // 유령 아이콘은 드롭 성공/실패와 관계없이 역할을 다했으므로 무조건 파괴합니다.
-        if (IsGhost)
+        if (DragContext.IsActive)
         {
-            Destroy(gameObject);
-            return;
+            // 실패 → 원복
+            if (_img.sprite != null)
+            {
+                _img.enabled = true;
+                _img.raycastTarget = true;
+            }
+            _cg.blocksRaycasts = true;
+            DragContext.Clear();
         }
-
-        // 실제 인벤토리 아이콘의 드래그가 끝났을 때
-        _canvasGroup.blocksRaycasts = true;
-        // 허공에 드롭되었다면 원래 부모로 돌아갑니다.
-        if (eventData.pointerEnter == null)
+        else
         {
-            transform.SetParent(_originalParent);
+            // 성공 → 리빌드에 맡김
+            _cg.blocksRaycasts = true;
         }
-        // 드롭에 성공했다면, RunManager 이벤트에 의해 UI가 새로고침되면서
-        // 이 아이콘은 어차피 파괴될 것이므로 여기서 특별히 처리할 필요가 없습니다.
     }
 }

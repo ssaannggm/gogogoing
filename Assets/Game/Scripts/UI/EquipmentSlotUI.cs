@@ -1,30 +1,37 @@
-﻿// Assets/Game/Scripts/UI/EquipmentSlotUI.cs (최종 수정본)
+﻿// Assets/Game/Scripts/UI/EquipmentSlotUI.cs
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Game.Items;
 using Game.Runtime;
+using Game.UI;
 
-public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, IEndDragHandler
+public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("슬롯 정보")]
     public EquipSlot slotType;
-    public int CharacterIndex { get; private set; }
+    public int CharacterIndex;
 
     [Header("UI 참조")]
-    [SerializeField] private Image iconImage;
-    [SerializeField] private CanvasGroup _iconCanvasGroup;
+    [SerializeField] private Image iconImage;      // 드롭 수신 Graphic
+    [SerializeField] private CanvasGroup iconCg;
+
+    [Header("고스트 프리팹(선택)")]
+    [SerializeField] private GameObject _ghostPrefab;
 
     private InventoryPartyMode _controller;
-    private ItemSO _currentItem;
-    private bool _isDraggable = true;
+    private ItemSO _currentItem;                   // ★ SO로 보관
+    private RectTransform _ghost;
 
-    void Awake()
+    void OnDisable()
     {
-        if (_iconCanvasGroup == null && iconImage != null)
-        {
-            _iconCanvasGroup = iconImage.GetComponent<CanvasGroup>() ?? iconImage.gameObject.AddComponent<CanvasGroup>();
-        }
+        if (_ghost) { Destroy(_ghost.gameObject); _ghost = null; }
+        if (iconImage) iconImage.raycastTarget = true; // 항상 드롭 받게
+        if (DragContext.IsActive &&
+            DragContext.Current.source == DragSourceType.Slot &&
+            DragContext.Current.memberIndex == CharacterIndex &&
+            DragContext.Current.slot == slotType)
+            DragContext.Clear();
     }
 
     public void Setup(int characterIndex, ItemSO item, InventoryPartyMode controller, bool isDraggable)
@@ -32,55 +39,71 @@ public class EquipmentSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, I
         CharacterIndex = characterIndex;
         _controller = controller;
         _currentItem = item;
-        _isDraggable = isDraggable;
 
-        bool hasItem = item != null;
-        if (iconImage) iconImage.sprite = hasItem ? item.icon : null;
-        if (_iconCanvasGroup) _iconCanvasGroup.alpha = hasItem ? 1f : 0f;
+        bool has = item != null;
+        if (iconImage)
+        {
+            iconImage.sprite = has ? item.icon : null;
+            iconImage.raycastTarget = true; // 아이템 유무와 무관하게 항상 켬
+        }
+        if (iconCg) iconCg.alpha = has ? 1f : 0f;
     }
 
-    public void OnDrop(PointerEventData eventData)
+    public void OnBeginDrag(PointerEventData e)
     {
-        var itemIcon = eventData.pointerDrag.GetComponent<ItemIconUI>();
-        if (itemIcon == null || itemIcon.ItemData == null) return;
+        if (_currentItem == null || _controller == null) return;
 
-        // 슬롯 타입이 맞는지 확인하고 컨트롤러에 장착 요청
-        if (itemIcon.ItemData.slot == this.slotType)
+        // ★ SO 기반 페이로드
+        DragContext.StartFromSlot(CharacterIndex, slotType, _currentItem);
+
+        var prefab = _ghostPrefab ? _ghostPrefab : _controller.GetItemIconPrefab();
+        if (prefab)
         {
-            _controller?.HandleEquipRequest(itemIcon.ItemData, this.CharacterIndex, this.slotType);
+            var go = Instantiate(prefab, _controller.dragParent);
+            _ghost = go.transform as RectTransform;
+
+            var gCg = go.GetComponentInChildren<CanvasGroup>() ?? go.AddComponent<CanvasGroup>();
+            gCg.blocksRaycasts = false;
+
+            var ghostImg = go.GetComponentInChildren<Image>();
+            if (ghostImg && iconImage) ghostImg.sprite = iconImage.sprite;
+            _ghost.position = e.position;
+        }
+
+        if (iconCg) iconCg.alpha = 0f;
+        if (iconImage) iconImage.raycastTarget = false; // 자기 자신으로 드롭 방지
+    }
+
+    public void OnDrag(PointerEventData e)
+    {
+        if (_ghost) _ghost.position = e.position;
+    }
+
+    public void OnEndDrag(PointerEventData e)
+    {
+        if (_ghost) { Destroy(_ghost.gameObject); _ghost = null; }
+
+        // 처리 안 됨 → 원복
+        if (DragContext.IsActive)
+        {
+            if (iconCg) iconCg.alpha = (_currentItem != null) ? 1f : 0f;
+            if (iconImage) iconImage.raycastTarget = true;
+            DragContext.Clear();
+        }
+        else
+        {
+            if (iconImage) iconImage.raycastTarget = true;
         }
     }
 
-    public void OnBeginDrag(PointerEventData eventData)
+    public void OnDrop(PointerEventData e)
     {
-        if (_currentItem == null || !_isDraggable) return;
+        if (_controller == null || !DragContext.IsActive) return;
 
-        // 1. 유령 아이콘 생성
-        var iconGO = Instantiate(_controller.GetItemIconPrefab(), _controller.dragParent);
-        var ghostIcon = iconGO.GetComponent<ItemIconUI>();
-        ghostIcon.SetupAsGhost(_currentItem, _controller, this);
-        eventData.pointerDrag = iconGO;
+        // ★ 슬롯 검증: 다른 타입이면 장착 불가
+        var payload = DragContext.Current;
+        if (payload.item == null || payload.item.slot != slotType) return;
 
-        // 2. 원래 아이콘은 "집었다"는 표시로 완전히 투명하게 만듭니다.
-        if (_iconCanvasGroup) _iconCanvasGroup.alpha = 0f;
-    }
-
-    public void OnDrag(PointerEventData eventData) { }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        // 드래그가 끝났을 때 이 슬롯이 직접 자신의 모습을 바꾸지 않습니다.
-        // 모든 시각적 복원은 RunManager의 데이터 변경 이벤트가 발생시킨
-        // RefreshAllUI -> Setup() 호출을 통해 이루어집니다.
-        // 만약 드롭이 실패하여 데이터 변경이 없다면, 이벤트도 없으므로
-        // 이 슬롯의 모습은 바뀌지 않고 계속 투명한 상태로 남아있게 됩니다.
-        // 이를 해결하기 위해, 드롭이 실패했을 가능성을 대비하여 컨트롤러에 "새로고침"을 요청합니다.
-
-        // 유령 아이콘은 스스로 파괴됩니다.
-        // 만약 드롭이 유효한 대상 위에서 끝나지 않았다면(허공), UI를 강제로 한번 새로고침합니다.
-        if (eventData.pointerEnter == null)
-        {
-            _controller.ForceRefreshUI();
-        }
+        _controller.ApplyDropToSlotSO(CharacterIndex, slotType);
     }
 }

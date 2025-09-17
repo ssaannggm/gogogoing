@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Game.Runtime
 {
-    public sealed class InventoryPartyMode : MonoBehaviour, IGameMode
+    public sealed partial class InventoryPartyMode : MonoBehaviour, IGameMode
     {
         // --- 기존 변수들은 모두 그대로 ---
         private GameFlowController _flow;
@@ -31,6 +31,8 @@ namespace Game.Runtime
 
         public void Setup(GameFlowController flow) => _flow = flow;
         public GameObject GetItemIconPrefab() => _itemIconPrefab;
+        // 장비/인벤토리 아이콘에서 고스트 프리팹을 달라고 할 때 호출
+
 
         // --- Awake, OnEnable, OnDisable 등 기존 함수들 그대로 ---
         void Awake()
@@ -65,7 +67,9 @@ namespace Game.Runtime
                 gameObject.SetActive(false);
                 return;
             }
-            RefreshAllUI();
+            var invCanvas = GetComponentInChildren<Canvas>(true);
+            if (invCanvas) { invCanvas.overrideSorting = true; invCanvas.sortingOrder = 500; } // HUD 위로
+            ForceRefreshUI(); // 열릴 때 항상 새로고침
         }
         public void ExitMode() => gameObject.SetActive(false);
         private void OnConfirmClicked()
@@ -154,5 +158,75 @@ namespace Game.Runtime
                 _currentRun.UnequipItem(characterIndex, sourceSlot);
             }
         }
+        // 드래그: 현재 들고 있는 것 → 특정 슬롯에 적용
+        public void ApplyDropToSlot(int targetMemberIndex, EquipSlot targetSlot)
+        {
+            if (!DragContext.IsActive || GameManager.I?.CurrentRun == null) { DragContext.Clear(); return; }
+            var run = GameManager.I.CurrentRun;
+            var payload = DragContext.Current;
+            var item = payload.item; // ★ ItemSO 직접 참조
+
+            if (item == null) { DragContext.Clear(); return; }
+
+            // 슬롯 타입 검증
+            if (item.slot != targetSlot) { DragContext.Clear(); RefreshAllUI(); return; }
+
+            switch (payload.source)
+            {
+                case DragSourceType.Inventory:
+                    {
+                        // 기존 슬롯에 장착 아이템 있으면 인벤토리로
+                        if (run.PartyState[targetMemberIndex].equippedItemIds.TryGetValue(targetSlot, out var existingId))
+                            run.AddItemToInventory(existingId);
+
+                        run.EquipItem(targetMemberIndex, targetSlot, item.itemId);
+                        run.RemoveItemFromInventory(item.itemId);
+                        break;
+                    }
+                case DragSourceType.Slot:
+                    {
+                        var srcM = payload.memberIndex;
+                        var srcS = payload.slot;
+
+                        // 같은 슬롯이면 무시
+                        if (srcM == targetMemberIndex && srcS == targetSlot)
+                        {
+                            DragContext.Clear(); return;
+                        }
+
+                        // 출발 슬롯 해제
+                        run.UnequipItem(srcM, srcS);
+
+                        // 타깃 슬롯에 기존 있으면 인벤토리로
+                        if (run.PartyState[targetMemberIndex].equippedItemIds.TryGetValue(targetSlot, out var existingId))
+                            run.AddItemToInventory(existingId);
+
+                        run.EquipItem(targetMemberIndex, targetSlot, item.itemId);
+                        break;
+                    }
+            }
+
+            DragContext.Clear();
+            RefreshAllUI();
+        }
+
+        // 드래그: 현재 들고 있는 것 → 인벤토리로 (해제)
+        public void ApplyDropToInventory()
+        {
+            if (!DragContext.IsActive || GameManager.I?.CurrentRun == null) { DragContext.Clear(); return; }
+            var run = GameManager.I.CurrentRun;
+            var payload = DragContext.Current;
+            var item = payload.item;
+
+            if (payload.source == DragSourceType.Slot && item != null)
+            {
+                run.UnequipItem(payload.memberIndex, payload.slot);
+                run.AddItemToInventory(item.itemId);
+            }
+
+            DragContext.Clear();
+            RefreshAllUI();
+        }
+
     }
 }

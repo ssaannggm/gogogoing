@@ -1,0 +1,68 @@
+﻿GameFlow
+  ReCruitmentSystem
+    RecruitmentCanvas
+      RecruitmentUI
+        LeftChoicePanel
+          BackgroundImage_A
+          StoryText_A
+          NameText_A
+          SelectButton_A
+            Text (TMP)
+        RightChoicePanel
+          BackgroundImage_B
+          StoryText_B
+          NameText_B
+          SelectButton_B
+            Text (TMP)
+      PartySetupView
+        SlotsContainer
+  MapRoot
+    MapCanvas
+      Content
+        TitleText
+        DescText
+        Choices
+  EventRoot
+  BattleProxy
+  InventoryRoot
+    InventoryCanvas
+      GameObject
+      LeftPanel
+        SlotsContainer
+        StartBattleButton
+          Text (TMP)
+      CenterPanel
+        CharacterPortrait
+        EquipmentSlots
+          HelmetSlot_BG
+          ArmorSlot_BG
+          RightHandSlot_BG
+          LeftHandSlot_BG
+          HelmetSlot
+            Text (TMP)
+          ArmorSlot
+            Text (TMP)
+          RightHandSlot
+            Text (TMP)
+          LeftHandSlot
+            Text (TMP)
+        StatDisplayPanel
+          체력
+          체력 값
+          공격력
+          공격력 값
+          방어
+          방어 값
+          공격속도
+          공격속도 값
+          공격범위
+          공격범위 값
+          이동속도
+          이동속도 값
+      RightPanel
+        InventoryList
+          Viewport
+            Content
+          Scrollbar Vertical
+            Sliding Area
+              Handle
