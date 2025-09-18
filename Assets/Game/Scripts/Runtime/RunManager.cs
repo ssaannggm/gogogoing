@@ -1,5 +1,4 @@
-﻿// RunManager.cs - 전체 코드
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,13 +10,17 @@ namespace Game.Runtime
 {
     public sealed class RunManager
     {
-        // [추가] 데이터 변경을 UI에 알리기 위한 C# 이벤트
-        // static으로 선언하여 어디서든 구독할 수 있게 합니다.
         public static event Action OnRunDataChanged;
 
         public int Seed { get; private set; }
         public int Floor { get; private set; } = 0;
         public string CurrentNodeId { get; private set; }
+
+        private int _gold;
+        public int Gold => _gold;
+
+        private int _fame;
+        public int Fame => _fame;
 
         private readonly DataCatalog _data;
         private System.Random _rng;
@@ -33,8 +36,80 @@ namespace Game.Runtime
             Seed = seed;
             _data = data;
             _rng = new System.Random(seed);
+            _gold = 0;
+            _fame = 0;
         }
 
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        // ★★★★★ 여기가 핵심: 보상 꾸러미 적용 함수 ★★★★★
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+        /// <summary>
+        /// Reward 구조체에 담긴 보상 꾸러미를 한 번에 적용합니다.
+        /// </summary>
+        public void ApplyReward(Reward reward)
+        {
+            // 기존에 만들어 둔 안전한 함수들을 그대로 재사용합니다.
+            AddGold(reward.gold);
+            AddFame(reward.fame);
+
+            if (reward.items != null)
+            {
+                foreach (var item in reward.items)
+                {
+                    if (item != null)
+                        AddItemToInventory(item.itemId);
+                }
+            }
+        }
+
+        // --- 개별 재화 관리 함수들 (기존과 동일) ---
+        public void AddGold(int amount)
+        {
+            if (amount <= 0) return;
+            _gold += amount;
+            Debug.Log($"골드 +{amount} / 현재 골드: {_gold}");
+            OnRunDataChanged?.Invoke();
+        }
+
+        public bool SpendGold(int amount)
+        {
+            if (amount <= 0 || _gold < amount)
+            {
+                Debug.LogWarning($"골드 부족! 필요: {amount}, 보유: {_gold}");
+                return false;
+            }
+            _gold -= amount;
+            Debug.Log($"골드 -{amount} / 현재 골드: {_gold}");
+            OnRunDataChanged?.Invoke();
+            return true;
+        }
+
+        public void AddFame(int amount)
+        {
+            if (amount <= 0) return;
+            _fame += amount;
+            Debug.Log($"명성 +{amount} / 현재 명성: {_fame}");
+            OnRunDataChanged?.Invoke();
+        }
+
+        public void AddItemToInventory(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return;
+            _inventoryItemIds.Add(itemId);
+            Debug.Log($"{itemId} 을(를) 인벤토리에 추가했습니다.");
+            OnRunDataChanged?.Invoke();
+        }
+
+        public void RemoveItemFromInventory(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return;
+            _inventoryItemIds.Remove(itemId);
+            OnRunDataChanged?.Invoke();
+        }
+
+        // ... (이하 나머지 코드는 이전과 동일합니다) ...
+        #region Unchanged Methods
         public int NextBattleSeed() => _rng.Next(int.MinValue, int.MaxValue);
 
         public BattleRequest BuildBattleRequest(EncounterSO enc, int difficulty = 0)
@@ -76,17 +151,13 @@ namespace Game.Runtime
                     _partyState.Add(newMember);
                 }
             }
-            // [추가] 파티 데이터가 변경되었으므로 이벤트 호출
             OnRunDataChanged?.Invoke();
         }
 
-        // [수정] ItemSO 대신 itemId를 받도록 수정
         public void EquipItem(int partyMemberIndex, EquipSlot slot, string itemId)
         {
             if (partyMemberIndex < 0 || partyMemberIndex >= _partyState.Count || string.IsNullOrEmpty(itemId)) return;
             _partyState[partyMemberIndex].equippedItemIds[slot] = itemId;
-
-            // [추가] 데이터 변경 이벤트 호출
             OnRunDataChanged?.Invoke();
         }
 
@@ -94,27 +165,6 @@ namespace Game.Runtime
         {
             if (partyMemberIndex < 0 || partyMemberIndex >= _partyState.Count) return;
             _partyState[partyMemberIndex].equippedItemIds.Remove(slot);
-
-            // [추가] 데이터 변경 이벤트 호출
-            OnRunDataChanged?.Invoke();
-        }
-
-        public void AddItemToInventory(string itemId)
-        {
-            if (string.IsNullOrEmpty(itemId)) return;
-            _inventoryItemIds.Add(itemId);
-            Debug.Log($"{itemId} 을(를) 인벤토리에 추가했습니다.");
-
-            // [추가] 데이터 변경 이벤트 호출
-            OnRunDataChanged?.Invoke();
-        }
-
-        public void RemoveItemFromInventory(string itemId)
-        {
-            if (string.IsNullOrEmpty(itemId)) return;
-            _inventoryItemIds.Remove(itemId);
-
-            // [추가] 데이터 변경 이벤트 호출
             OnRunDataChanged?.Invoke();
         }
 
@@ -136,7 +186,9 @@ namespace Game.Runtime
 
         public EncounterSO GetEncounterById(string id) => _data ? _data.GetEncounterById(id) : null;
         public MapNodeSO GetNodeById(string id) => _data ? _data.GetNodeById(id) : null;
+        #endregion
 
+        #region Snapshot
         [Serializable]
         public struct Snapshot
         {
@@ -144,7 +196,9 @@ namespace Game.Runtime
             public int floor;
             public string currentNodeId;
             public List<PartyMemberState> partyState;
-            public List<string> inventoryItemIds; // [추가] 인벤토리도 저장
+            public List<string> inventoryItemIds;
+            public int gold;
+            public int fame;
         }
 
         public Snapshot ToSnapshot() => new Snapshot
@@ -153,7 +207,9 @@ namespace Game.Runtime
             floor = Floor,
             currentNodeId = CurrentNodeId,
             partyState = new List<PartyMemberState>(_partyState),
-            inventoryItemIds = new List<string>(_inventoryItemIds) // [추가]
+            inventoryItemIds = new List<string>(_inventoryItemIds),
+            gold = _gold,
+            fame = _fame
         };
 
         public static RunManager FromSnapshot(Snapshot s, DataCatalog data)
@@ -161,7 +217,9 @@ namespace Game.Runtime
             var rm = new RunManager(s.seed, data)
             {
                 Floor = Math.Max(0, s.floor),
-                CurrentNodeId = s.currentNodeId
+                CurrentNodeId = s.currentNodeId,
+                _gold = s.gold,
+                _fame = s.fame
             };
             if (s.partyState != null)
             {
@@ -169,9 +227,10 @@ namespace Game.Runtime
             }
             if (s.inventoryItemIds != null)
             {
-                rm._inventoryItemIds.AddRange(s.inventoryItemIds); // [추가]
+                rm._inventoryItemIds.AddRange(s.inventoryItemIds);
             }
             return rm;
         }
+        #endregion
     }
 }

@@ -26,7 +26,7 @@ MonoBehaviour:
     add_attackPower: 0
     add_defense: 0
     add_magicResist: 0
-    add_moveSpeed: 5
+    add_moveSpeed: 1
     add_abilityHaste: 0
     add_attackRange: 0
     add_critDamage: 0
